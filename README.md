@@ -5,7 +5,7 @@ A set of lightweight, fast and usable c++ data structures. Easily extensible. Av
 
 Structures are polymorphic with strong interface seggragation. 
 
-##priorities: 
+## priorities: 
 1. Emphasis is on allowing coders to easily create thier own datastructures for cache and architecture optimization. 
 2. Keeping compiled code small, for crossplatform/emscripton optimized code.
 3. Speed. 
