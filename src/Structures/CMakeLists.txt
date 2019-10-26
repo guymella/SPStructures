@@ -9,12 +9,12 @@ fips_begin_module(Structures)
     )
 fips_end_module()
 
-fips_begin_unittest(Structures)
-    fips_vs_warning_level(3)
-    fips_dir(UnitTests)
-    fips_files(
-        BlockTest.cc        
-    )
-    fips_deps(Structures)
-fips_end_unittest()
+# fips_begin_unittest(Structures)
+#     fips_vs_warning_level(3)
+#     fips_dir(UnitTests)
+#     fips_files(
+#         BlockTest.cc        
+#     )
+#     fips_deps(Structures)
+# fips_end_unittest()
 
