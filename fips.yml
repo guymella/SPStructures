@@ -3,8 +3,6 @@
 #
 ---
 imports:
-    fips-unittestpp:
-        git: https://github.com/floooh/fips-unittestpp.git
 exports:
     header-dirs:
         - src
