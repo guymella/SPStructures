@@ -1,8 +1,7 @@
 #
 # Fips-SPStructures
 #
----
-imports:
+
 exports:
     header-dirs:
         - src

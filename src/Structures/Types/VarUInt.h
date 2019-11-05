@@ -1,11 +1,12 @@
 //------------------------------------------------------------------------------
-//  BlockTest.cc
+//  VarInt.h
 //------------------------------------------------------------------------------
-#include "Structures/Block.h"
-#include "UnitTest++/src/UnitTest++.h"
 
-TEST(BlockTest) {
+#include "Structures/Interfaces/iProcArray.h"
 
-    // setup    
-    CHECK(true);    
-}
+class VarInt {
+public:
+	VarInt() {};
+private:
+	uint8_t** src;
+};
