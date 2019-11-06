@@ -7,12 +7,15 @@ fips_begin_module(Structures)
 	
     fips_dir(Containers)
     fips_files(
-        Block.h Block.cc
+        Allocator.h Block.h Block.cc
     )
 
     fips_dir(interfaces)
     fips_files(
-        iProcArray.h iProcArray.cc      
+        iBlock.h iBlock.cc 
+		iTable.h iTable.cc 
+		iArray.h iArray.cc 
+		iStruct.h iStruct.cc    
     )
 
     fips_dir(Types)

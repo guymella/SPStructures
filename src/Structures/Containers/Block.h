@@ -3,10 +3,10 @@
 /**
     @class Structures::Block
     @ingroup Block
-    @brief inline Block of dynamic Memory
+    @brief inline Block of dynamic Memory, Self Allocating on heap
 */
 
-#include <stdint.h>
+#include "Structures/Types.h"
 #include <string.h>
 #include <memory>
 
@@ -15,11 +15,11 @@ class Block {
 public:
 	Block();
 	inline void InitializeBlock(const size_t& size);
-	Block(size_t size);
+	Block(const size_t& size);
 	size_t Size() const;
 	bool Initialized() const;
 	void Grow();
-	void Grow(size_t newSize);
+	void Grow(const size_t& newSize);
 	void * memStart();
 
 
@@ -27,7 +27,7 @@ public:
 	void FastCopy(Block& src, size_t srcStartIndex, size_t StartIndex, size_t numBytes); //copy block into block
 private:
 	void* blockStart = 0;
-	//dynamic size is stored at beggining of memory block
+	//dynamic size is stored inline at beggining of memory block
 
 };
 
@@ -41,7 +41,7 @@ inline void Block::InitializeBlock(const size_t& size)
 	((size_t*)blockStart)[0] = size;
 }
 
-Block::Block(size_t size)  {
+Block::Block(const size_t& size)  {
 	InitializeBlock(size);
 }
 
@@ -61,11 +61,11 @@ inline void Block::Grow()
 {
 	size_t s = Size();
 	if (s)
-		Grow((size_t)((double)s * 1.62));
+		Grow((size_t)((double)s * 1.618));
 }
 
-inline void Block::Grow(size_t newSize)
-{
+inline void Block::Grow(const size_t& newSize)
+{ 
 	size_t oldSize = Size();
 	if (newSize > oldSize)
 	{
