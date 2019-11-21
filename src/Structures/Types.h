@@ -31,10 +31,9 @@ static const int32_t EndOfRange = -1;
 } // namespace Oryol
 
 enum baseTypes : uint8_t {
-	
 	Byte = 0, // 1 byte
 	Short = 1, // 2 bytes
-	Word = 2, // 4bytes 
+	Word = 2, // 4 bytes 
 	Duel = 3, // 8 bytes (cpu registers)
 	Quad = 4, // 16 bytes (sse register)
 	Oct = 5, // 32 bytes (avx1 register)
@@ -93,8 +92,11 @@ enum baseTypes : uint8_t {
 	PRef = 58, //phisical reference (ipv6|port|registration)
 	LRef = 59, //local reference (0|0|? reserved for local scope registration, all others used for IPC)
 
-	ProcF = 125,
-	ProcR = 126,
-	Proc = 127
+	MemTableF = 125, //front loaded table
+	MemTableR = 126, // back loaded table
+	MemTable = 127,  //Table default (middle out) 
 
+	Val = 253, // undefined value stub. polymorphic base value
+	Poly = 254, //undefined object stub, pure polymorphic struct
+	Void = 255, //empty uninitialized
 };
