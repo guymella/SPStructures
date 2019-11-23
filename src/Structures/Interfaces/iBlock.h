@@ -7,42 +7,51 @@
 	
 */
 #include "Structures/Types.h"
-
-	class iBlock{
-	public:
-		virtual size_t Size() const = 0;
-		virtual void* memStart() = 0;
-		virtual const void* memStart() const = 0;
-		virtual void Grow() = 0; // just grow (very dumb grow = golden ratio)
-		virtual void Grow(const size_t& newSize) = 0; //grow to specific size, copy all to front (dumb grow)
-		//void Grow(const size_t& SizeFactor, size_t* CopyMap); //grow to allocation block size factor, copy by map (smart grow)
-		
-		void* headerStart();
-		void* headerStart() const;
-		baseTypes Type() const;
-		void SetType(baseTypes newType);
-		
-	};
+#include "iDynamic.h"
+#include "iCountable.h"
 
 
-	inline void* iBlock::headerStart() {
-		return (baseTypes*)memStart() + 1;
+
+class iBlock : public iCountable {
+public:
+	virtual void* memStart() = 0;
+	virtual const void* memStart() const = 0;
+
+	void* headerStart();
+	void* headerStart() const;
+	baseTypes Type() const;
+	virtual void SetType(baseTypes newType);
+};
+   
+
+class iDBlock : public iBlock, public iDynamicGrow {
+public:
+	void SetType(baseTypes newType) override;		
+};
+
+
+inline void* iBlock::headerStart() {
+	return (baseTypes*)memStart() + 1;
+}
+
+inline void* iBlock::headerStart() const {
+	return (baseTypes*)memStart() + 1;
+}
+
+inline baseTypes iBlock::Type() const {
+	if (Size()) {
+		return *((baseTypes*)memStart());
 	}
+	return baseTypes::Void;
+}
 
-	inline void* iBlock::headerStart() const {
-		return (baseTypes*)memStart() + 1;
-	}
+inline void iBlock::SetType(baseTypes newType) {
+	*((baseTypes*)memStart()) = newType;
+}
 
-	inline baseTypes iBlock::Type() const {
-		if (Size()) {
-			return *((baseTypes*)memStart());
-		}
-		return baseTypes::Void;
+inline void iDBlock::SetType(baseTypes newType) {
+	if (!Size()) {
+		Grow(1);
 	}
-
-	inline void iBlock::SetType(baseTypes newType) {
-		if (!Size()) {
-			Grow(1);
-		}
-		*((baseTypes*)memStart()) = newType;
-	}
+	iBlock::SetType(newType);
+}

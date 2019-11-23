@@ -12,12 +12,32 @@
 #include <memory>
 
 
+
+template <size_t SIZE>
 class Block : public iBlock {
 public:
 	Block();
-	~Block();
+	inline void InitializeBlock();
+
+	size_t Size() const override;
+	void* memStart() override;
+	const void* memStart() const override;
+
+
+	//void FastCopy(uint8_t* src, size_t StartIndex, size_t numBytes); //copy bytes into block
+	//void FastCopy(DBlock& src, size_t srcStartIndex, size_t StartIndex, size_t numBytes); //copy block into block
+private:
+	uint8_t block[SIZE];
+	//dynamic size is stored inline at beggining of memory block
+
+};
+
+class DBlock : public iDBlock {
+public:
+	DBlock();
+	~DBlock();
 	inline void InitializeBlock(const size_t& size);
-	Block(const size_t& size);
+	DBlock(const size_t& size);
 	
 	bool Initialized() const;
 	size_t Size() const override;
@@ -27,23 +47,23 @@ public:
 	const void* memStart() const override;
 
 
-	void FastCopy(uint8_t* src, size_t StartIndex, size_t numBytes); //copy bytes into block
-	void FastCopy(Block& src, size_t srcStartIndex, size_t StartIndex, size_t numBytes); //copy block into block
+	//void FastCopy(uint8_t* src, size_t StartIndex, size_t numBytes); //copy bytes into block
+	//void FastCopy(DBlock& src, size_t srcStartIndex, size_t StartIndex, size_t numBytes); //copy block into block
 private:
 	void* blockStart = 0;
 	//dynamic size is stored inline at beggining of memory block
 
 };
 
-Block::Block() {
+DBlock::DBlock() {
 };
-Block::~Block()
+DBlock::~DBlock()
 {
 	if (blockStart)
 		free(blockStart);
 }
 
-inline void Block::InitializeBlock(const size_t& size)
+inline void DBlock::InitializeBlock(const size_t& size)
 {
 	blockStart = std::malloc(size + sizeof(size_t));
 	((size_t*)blockStart)[0] = size;
@@ -52,23 +72,23 @@ inline void Block::InitializeBlock(const size_t& size)
 	}
 }
 
-Block::Block(const size_t& size)  {
+DBlock::DBlock(const size_t& size)  {
 	InitializeBlock(size);
 }
 
-inline size_t Block::Size() const
+inline size_t DBlock::Size() const
 {
 	if (Initialized())
 		return ((size_t*)blockStart)[0];
 	return 0;
 }
 
-inline bool Block::Initialized() const
+inline bool DBlock::Initialized() const
 {
 	return blockStart;
 }
 
-inline void Block::Grow()
+inline void DBlock::Grow()
 {
 	size_t s = Size();
 	if (s)
@@ -79,7 +99,7 @@ inline void Block::Grow()
 
 }
 
-inline void Block::Grow(const size_t& newSize)
+inline void DBlock::Grow(const size_t& newSize)
 { 
 	size_t oldSize = Size();
 	if (newSize > oldSize)
@@ -93,13 +113,36 @@ inline void Block::Grow(const size_t& newSize)
 		}
 	}
 }
-inline void* Block::memStart()
+inline void* DBlock::memStart()
 {
 	return (uint8_t*)blockStart + sizeof(size_t);
 }
-inline const void* Block::memStart() const
+inline const void* DBlock::memStart() const
 {
 	return (uint8_t*)blockStart + sizeof(size_t);;
 }
 ;
 
+template<size_t SIZE>
+inline void Block<SIZE>::InitializeBlock()
+{
+	*((baseTypes*)memStart()) = baseTypes::Void;
+}
+
+template<size_t SIZE>
+inline size_t Block<SIZE>::Size() const
+{
+	return SIZE;
+}
+
+template<size_t SIZE>
+inline void* Block<SIZE>::memStart()
+{
+	return block&;
+}
+
+template<size_t SIZE>
+inline const void* Block<SIZE>::memStart() const
+{
+	return block&;
+}

@@ -3,18 +3,15 @@
 //------------------------------------------------------------------------------
 #include "structures/Containers/Block.h"
 #include "Structures/Containers/Table.h"
+#include "Structures/Containers/Array.h"
 
 int main(void) {
 	
-	Block a(8);
+	DBlock a(8);
 	int* p = (int*)a.memStart();
 	p[0] = 5;
 	p[1] = 7;
-
 	
-
-
-
 	a.Grow(16);
 
 	p = (int*)a.memStart();
@@ -23,7 +20,7 @@ int main(void) {
 	p[2] = 5;
 	p[3] = 7;
 
-	Block b(128);
+	DBlock b(128);
 	
 
 	Table t(&b,2);
@@ -39,8 +36,8 @@ int main(void) {
 	baseTypes bb = *(baseTypes * )t.FindPartitionMem(0);
 	bb = *(baseTypes*)t.FindPartitionMem(1);
 
-	iBlock* pp0 = t.GetPartition(0);
-	iBlock* pp1 = t.GetPartition(1);
+	iDBlock* pp0 = t.GetPartition(0);
+	iDBlock* pp1 = t.GetPartition(1);
 	size_t pps0 = pp0->Size();
 	size_t pps1 = pp1->Size();
 	pp1->Grow(8);
@@ -64,6 +61,9 @@ int main(void) {
 	p = (int*)pp0->memStart();
 	xx = p[0];
 	yy = p[1];
+
+
+	Array<int> ai;
 
 
 	return 0;

@@ -31,107 +31,128 @@
     
     @see ArrayMap, Map, Set, HashSet
 */
-#include "Core/Config.h"
-#include "Core/Containers/elementBuffer.h"
-#include "Core/Containers/Slice.h"
+//#include "Core/Config.h"
+//#include "Core/Containers/elementBuffer.h"
+//#include "Core/Containers/Slice.h"
+#include "Structures/Interfaces/iArray.h"
+#include "Structures/Containers/Block.h"
+
 #include <initializer_list>
 
-namespace Oryol {
+//namespace Structures {
 
-template<class TYPE> class Array {
+template<class TYPE> class Array : public iDArray<TYPE> , public DBlock{
 public:
     /// default constructor
     Array();
     /// copy constructor (truncates to actual size)
-    Array(const Array& rhs);
+    //Array(const Array& rhs);
     /// move constructor (same capacity and size)
-    Array(Array&& rhs);
+    //Array(Array&& rhs);
     /// initialize from initializer list
-    Array(std::initializer_list<TYPE> l);
+    //Array(std::initializer_list<TYPE> l);
     /// destructor
     ~Array();
 
     /// copy-assignment operator (truncates to actual size)
-    void operator=(const Array& rhs);
+    //void operator=(const Array& rhs);
     /// move-assignment operator (same capacity and size)
-    void operator=(Array&& rhs);
+    //void operator=(Array&& rhs);
     
     /// set allocation strategy
-    void SetAllocStrategy(int minGrow_, int maxGrow_=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
+    //void SetAllocStrategy(int minGrow_, int maxGrow_=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     /// initialize the array to a fixed capacity (guarantees that no re-allocs happen)
-    void SetFixedCapacity(int fixedCapacity);
+    //void SetFixedCapacity(int fixedCapacity);
     /// get min grow value
-    int GetMinGrow() const;
+    //int GetMinGrow() const;
     /// get max grow value
-    int GetMaxGrow() const;
+    //int GetMaxGrow() const;
     /// get number of elements in array
-    int Size() const;
+    size_t Size() const override;
     /// return true if empty
-    bool Empty() const;
+    //bool Empty() const override;
     /// get capacity of array
-    int Capacity() const;
+    size_t Capacity() const override;
     /// get number of free slots at back of array
-    int Spare() const;
+    size_t Spare() const override;
+	size_t SpareFront() const override;
+	
+	size_t SpareBack() const override;
     
     /// read/write access an existing element
-    TYPE& operator[](int index);
+    TYPE& operator[](size_t index) override;
     /// read-only access to existing element
-    const TYPE& operator[](int index) const;
+    const TYPE& operator[](size_t index) const override;
     /// read/write access to first element (must exists)
-    TYPE& Front();
+    TYPE& Front() override;
     /// read-only access to first element (must exist)
-    const TYPE& Front() const;
+    const TYPE& Front() const override;
     /// read/write access to last element (must exist)
-    TYPE& Back();
+    TYPE& Back() override;
     /// read-only access to last element (must exist)
-    const TYPE& Back() const;
+    const TYPE& Back() const override;
     /// get a slice into the array (beware of iterator-invalidation!)
-    Slice<TYPE> MakeSlice(int offset=0, int numItems=EndOfRange);
+    //Slice<TYPE> MakeSlice(int offset=0, int numItems=EndOfRange);
 
     /// increase capacity to hold at least numElements more elements
-    void Reserve(int numElements);
+	void ReserveFront(const size_t& numElements) override;
+	void ReserveBack(const size_t& numElements) override;
+    void Reserve(const size_t& numElements) override;
+	void Reserve(const size_t& numElementsFront, const size_t& numElementsBack) override;
+	void ShiftBack(const size_t& numShift) override; //free up spare without realloc
+	void ShiftFront(const size_t& numShift) override;
+
+	void Grow() override; // just grow (very dumb grow = golden ratio)
+	void Grow(const size_t& newSize) override; //grow to specific size, copy all to front (dumb grow)
     /// trim capacity to size (this involves a re-alloc)
-    void Trim();
+    void Trim() override;
     /// clear the array (deletes elements, keeps capacity)
-    void Clear();
+    void Clear() override;
     
     /// copy-add element to back of array
-    TYPE& Add(const TYPE& elm);
+    TYPE& PushBack(const TYPE& elm);
     /// move-add element to back of array
-    TYPE& Add(TYPE&& elm);
+    TYPE& PushBack(TYPE&& elm);
+	/// copy-add element to back of array
+	TYPE& PushFront(const TYPE& elm);
+	/// move-add element to back of array
+	TYPE& PushFront(TYPE&& elm);
     /// construct-add new element at back of array
-    template<class... ARGS> TYPE& Add(ARGS&&... args);
+    template<class... ARGS> TYPE& PushBack(ARGS&&... args);
+	template<class... ARGS> TYPE& PushFront(ARGS&&... args);
     /// copy-insert element at index, keep array order
-    void Insert(int index, const TYPE& elm);
+    void Insert(size_t index, const TYPE& elm) override;
     /// move-insert element at index, keep array order
-    void Insert(int index, TYPE&& elm);
+    void Insert(size_t index, TYPE&& elm) override;
 
     /// pop the last element
-    TYPE PopBack();
+    TYPE PopBack() override;
+	TYPE PopBack(size_t numElements) override;
     /// pop the first element
-    TYPE PopFront();
+    TYPE PopFront() override;
+	TYPE PopFront(size_t numElements) override;
     /// erase element at index, keep element order
-    void Erase(int index);
+    void Erase(size_t index) override;
     /// erase element at index, swap-in front or back element (destroys element ordering)
-    void EraseSwap(int index);
+    void EraseSwap(size_t index) override;
     /// erase element at index, always swap-in from back (destroys element ordering)
-    void EraseSwapBack(int index);
+    void EraseSwapBack(size_t index) override;
     /// erase element at index, always swap-in from front (destroys element ordering)
-    void EraseSwapFront(int index);
+    void EraseSwapFront(size_t index) override;
     /// erase a range of elements, keep element order
-    void EraseRange(int index, int num);
+    void EraseRange(size_t index, size_t num) override;
     
     /// find element index with slow linear search, return InvalidIndex if not found
-    int FindIndexLinear(const TYPE& elm, int startIndex=0, int endIndex=InvalidIndex) const;
+	size_t FindIndexLinear(const TYPE& elm, size_t startIndex=0, size_t endIndex=InvalidIndex) const;
     
     /// C++ conform begin
-    TYPE* begin();
+    TYPE* begin() override;
     /// C++ conform begin
-    const TYPE* begin() const;
+    const TYPE* begin() const override;
     /// C++ conform end
-    TYPE* end();
+    TYPE* end() override;
     /// C++ conform end
-    const TYPE* end() const;
+    const TYPE* end() const override;
     
 private:
     /// destroy array resources
@@ -141,45 +162,46 @@ private:
     /// move from other array
     void move(Array&& rhs);
     /// reallocate with new capacity
-    void adjustCapacity(int newCapacity);
+    void adjustCapacity(size_t newCapacity);
     /// grow to make room
     void grow();
     
-    _priv::elementBuffer<TYPE> buffer;
-    int minGrow;
-    int maxGrow;
+	size_t startElem;
+	size_t size;
+    size_t minGrow;
+    size_t maxGrow;
 };
 
 //------------------------------------------------------------------------------
 template<class TYPE>
 Array<TYPE>::Array() :
-minGrow(ORYOL_CONTAINER_DEFAULT_MIN_GROW),
-maxGrow(ORYOL_CONTAINER_DEFAULT_MAX_GROW) {
+minGrow(128),
+maxGrow(128) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE>
-Array<TYPE>::Array(const Array& rhs) {
-    this->copy(rhs);
-}
-
-//------------------------------------------------------------------------------
-template<class TYPE>
-Array<TYPE>::Array(Array&& rhs) {
-    this->move(std::move(rhs));
-}
-
-//------------------------------------------------------------------------------
-template<class TYPE>
-Array<TYPE>::Array(std::initializer_list<TYPE> l) :
-minGrow(ORYOL_CONTAINER_DEFAULT_MIN_GROW),
-maxGrow(ORYOL_CONTAINER_DEFAULT_MAX_GROW) {
-    this->Reserve(int(l.size()));
-    for (const auto& elm : l) {
-        this->Add(elm);
-    }
-}
+//template<class TYPE>
+//Array<TYPE>::Array(const Array& rhs) {
+//    this->copy(rhs);
+//}
+//
+////------------------------------------------------------------------------------
+//template<class TYPE>
+//Array<TYPE>::Array(Array&& rhs) {
+//    this->move(std::move(rhs));
+//}
+//
+////------------------------------------------------------------------------------
+//template<class TYPE>
+//Array<TYPE>::Array(std::initializer_list<TYPE> l) :
+//minGrow(ORYOL_CONTAINER_DEFAULT_MIN_GROW),
+//maxGrow(ORYOL_CONTAINER_DEFAULT_MAX_GROW) {
+//    this->Reserve(int(l.size()));
+//    for (const auto& elm : l) {
+//        this->Add(elm);
+//    }
+//}
 
 //------------------------------------------------------------------------------
 template<class TYPE>
@@ -188,242 +210,360 @@ Array<TYPE>::~Array() {
 };
 
 //------------------------------------------------------------------------------
-template<class TYPE> void
-Array<TYPE>::operator=(const Array<TYPE>& rhs) {
-    /// @todo: this should be optimized when rhs.size() < this->capacity()!
-    if (&rhs != this) {
-        this->destroy();
-        this->copy(rhs);
-    }
-}
+//template<class TYPE> void
+//Array<TYPE>::operator=(const Array<TYPE>& rhs) {
+//    /// @todo: this should be optimized when rhs.size() < this->capacity()!
+//    if (&rhs != this) {
+//        this->destroy();
+//        this->copy(rhs);
+//    }
+//}
+//
+////------------------------------------------------------------------------------
+//template<class TYPE> void
+//Array<TYPE>::operator=(Array<TYPE>&& rhs) {
+//    /// @todo: this should be optimized when rhs.size() < this->capacity()!
+//    if (&rhs != this) {
+//        this->destroy();
+//        this->move(std::move(rhs));
+//    }
+//}
+//    
+////------------------------------------------------------------------------------
+//template<class TYPE> void
+//Array<TYPE>::SetAllocStrategy(int minGrow_, int maxGrow_) {
+//    this->minGrow = minGrow_;
+//    this->maxGrow = maxGrow_;
+//}
+//
+////------------------------------------------------------------------------------
+//template<class TYPE> void
+//Array<TYPE>::SetFixedCapacity(int fixedCapacity) {
+//    this->minGrow = 0;
+//    this->maxGrow = 0;
+//    if (fixedCapacity > this->buffer.capacity()) {
+//        this->adjustCapacity(fixedCapacity);
+//    }
+//}
+//
+////------------------------------------------------------------------------------
+//template<class TYPE> int
+//Array<TYPE>::GetMinGrow() const {
+//        return this->minGrow;
+//    }
+//    
+////------------------------------------------------------------------------------
+//template<class TYPE> int
+//Array<TYPE>::GetMaxGrow() const {
+//    return this->maxGrow;
+//}
 
 //------------------------------------------------------------------------------
-template<class TYPE> void
-Array<TYPE>::operator=(Array<TYPE>&& rhs) {
-    /// @todo: this should be optimized when rhs.size() < this->capacity()!
-    if (&rhs != this) {
-        this->destroy();
-        this->move(std::move(rhs));
-    }
-}
-    
-//------------------------------------------------------------------------------
-template<class TYPE> void
-Array<TYPE>::SetAllocStrategy(int minGrow_, int maxGrow_) {
-    this->minGrow = minGrow_;
-    this->maxGrow = maxGrow_;
-}
-
-//------------------------------------------------------------------------------
-template<class TYPE> void
-Array<TYPE>::SetFixedCapacity(int fixedCapacity) {
-    this->minGrow = 0;
-    this->maxGrow = 0;
-    if (fixedCapacity > this->buffer.capacity()) {
-        this->adjustCapacity(fixedCapacity);
-    }
-}
-
-//------------------------------------------------------------------------------
-template<class TYPE> int
-Array<TYPE>::GetMinGrow() const {
-        return this->minGrow;
-    }
-    
-//------------------------------------------------------------------------------
-template<class TYPE> int
-Array<TYPE>::GetMaxGrow() const {
-    return this->maxGrow;
-}
-
-//------------------------------------------------------------------------------
-template<class TYPE> int
+template<class TYPE> size_t
 Array<TYPE>::Size() const {
-    return this->buffer.size();
+	return size;
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> bool
-Array<TYPE>::Empty() const {
-    return this->buffer.size() == 0;
-}
+//template<class TYPE> bool
+//Array<TYPE>::Empty() const {
+//    return this->buffer.size() == 0;
+//}
 
 //------------------------------------------------------------------------------
-template<class TYPE> int
+template<class TYPE> size_t
 Array<TYPE>::Capacity() const {
-    return this->buffer.capacity();
+    return DBlock::Size() / sizeof(TYPE);
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> int
+template<class TYPE> size_t
 Array<TYPE>::Spare() const {
-    return this->buffer.backSpare();
+	return SpareBack();
+}
+
+template<class TYPE>
+inline size_t Array<TYPE>::SpareFront() const
+{
+	return startElem;
+}
+
+template<class TYPE>
+inline size_t Array<TYPE>::SpareBack() const
+{
+	return Capacity()-Size()-startElem;
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE&
-Array<TYPE>::operator[](int index) {
-    return this->buffer[index];
+Array<TYPE>::operator[](size_t index) {
+	//TODO:: handle out of range
+	return begin()[index];
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE&
-Array<TYPE>::operator[](int index) const {
-    return this->buffer[index];
+Array<TYPE>::operator[](size_t index) const {
+	//TODO:: handle out of range
+    return begin()[index];
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE&
 Array<TYPE>::Front() {
-    return this->buffer.front();
+	//TODO:: handle empty
+    return *begin();
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE&
 Array<TYPE>::Front() const {
-    return this->buffer.front();
+	//TODO:: handle empty
+    return *begin();
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE&
 Array<TYPE>::Back() {
-    return this->buffer.back();
+	//TODO:: handle empty
+	TYPE* e = end();
+	return *(e--);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE&
 Array<TYPE>::Back() const {
-    return this->buffer.back();
+	//TODO:: handle empty
+	const TYPE* e = end();
+    return *(e--);
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> Slice<TYPE>
-Array<TYPE>::MakeSlice(int offset, int numItems) {
-    if (numItems == EndOfRange) {
-        numItems = this->buffer.size() - offset;
-    }
-    return Slice<TYPE>(this->buffer.buf, this->buffer.size(), offset, numItems);
+//template<class TYPE> Slice<TYPE>
+//Array<TYPE>::MakeSlice(int offset, int numItems) {
+//    if (numItems == EndOfRange) {
+//        numItems = this->buffer.size() - offset;
+//    }
+//    return Slice<TYPE>(this->buffer.buf, this->buffer.size(), offset, numItems);
+//}
+
+template<class TYPE>
+inline void Array<TYPE>::ReserveFront(const size_t& numElements)
+{
+	//TODO::
+}
+
+template<class TYPE>
+inline void Array<TYPE>::ReserveBack(const size_t& numElements)
+{
+	//TODO::
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::Reserve(int numElements) {
-    int newCapacity = this->buffer.size() + numElements;
-    if (newCapacity > this->buffer.capacity()) {
+Array<TYPE>::Reserve(const size_t& numElements) {
+    size_t newCapacity = Size() + numElements;
+    if (newCapacity > Capacity()) {
         this->adjustCapacity(newCapacity);
     }
+}
+
+template<class TYPE>
+inline void Array<TYPE>::Reserve(const size_t& numElementsFront, const size_t& numElementsBack)
+{
+	//TODO::
+}
+
+template<class TYPE>
+inline void Array<TYPE>::ShiftBack(const size_t& numShift)
+{
+	//TODO::
+}
+
+template<class TYPE>
+inline void Array<TYPE>::ShiftFront(const size_t& numShift)
+{
+	//TODO::
+}
+
+template<class TYPE>
+inline void Array<TYPE>::Grow()
+{
+	//TODO::
+}
+
+template<class TYPE>
+inline void Array<TYPE>::Grow(const size_t& newSize)
+{
+	//TODO::
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::Trim() {
-    const int curSize = this->buffer.size();
-    if (curSize < this->buffer.capacity()) {
-        this->adjustCapacity(curSize);
-    }
+    adjustCapacity(Size());
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::Clear() {
-    this->buffer.clear();
+	size = 0;
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE&
-Array<TYPE>::Add(const TYPE& elm) {
-    if (this->buffer.backSpare() == 0) {
-        this->grow();
+Array<TYPE>::PushBack(const TYPE& elm) {
+    if (!SpareBack()) {
+		Grow();
     }
-    this->buffer.pushBack(elm);
-    return this->buffer.back();
+	size++;
+	Back() = elm;
+    return Back();
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE&
-Array<TYPE>::Add(TYPE&& elm) {
-    if (this->buffer.backSpare() == 0) {
-        this->grow();
-    }
-    this->buffer.pushBack(std::move(elm));
-    return this->buffer.back();
+Array<TYPE>::PushBack(TYPE&& elm) {
+	if (!SpareBack()) {
+		Grow();
+	}
+	size++;
+	Back() = std::move(elm);
+	return Back();
+}
+
+template<class TYPE>
+inline TYPE& Array<TYPE>::PushFront(const TYPE& elm)
+{
+	if (!SpareFront()) {
+		Grow();
+	}
+	startElem--;
+	size++;
+	Front() = elm;
+	return Front();
+}
+
+template<class TYPE>
+inline TYPE& Array<TYPE>::PushFront(TYPE&& elm)
+{
+	if (!SpareFront()) {
+		Grow();
+	}
+	startElem--;
+	size++;
+	Front() = std::move(elm);
+	return Front();
 }
     
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::Insert(int index, const TYPE& elm) {
-    if (this->buffer.spare() == 0) {
-        this->grow();
-    }
-    this->buffer.insert(index, elm);
+Array<TYPE>::Insert(size_t index, const TYPE& elm) {
+	if (!SpareBack() && !SpareFront())
+		Grow();
+	//TODO:: insert
+    //this->buffer.insert(index, elm);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::Insert(int index, TYPE&& elm) {
-    if (this->buffer.spare() == 0) {
-        this->grow();
-    }
-    this->buffer.insert(index, std::move(elm));
+Array<TYPE>::Insert(size_t index, TYPE&& elm) {
+	if (!SpareBack() && !SpareFront())
+		Grow();
+
+	//TODO:: insert
+	//this->buffer.insert(index, std::move(elm));
 
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> template<class... ARGS> TYPE&
-Array<TYPE>::Add(ARGS&&... args) {
-    if (this->buffer.backSpare() == 0) {
-        this->grow();
-    }
-    this->buffer.emplaceBack(std::forward<ARGS>(args)...);
-    return this->buffer.back();
+Array<TYPE>::PushBack(ARGS&&... args) {
+	if (!SpareBack())
+		Grow();
+	size++;
+	Back() = std::forward<ARGS>(args)...;
+    return Back();
+}
+
+template<class TYPE>
+template<class ...ARGS>
+inline TYPE& Array<TYPE>::PushFront(ARGS&& ...args)
+{
+	if (!SpareFront())
+		Grow();
+
+	startElem--;
+	size++;
+	Front() = std::forward<ARGS>(args)...;
+	return Front();
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE
 Array<TYPE>::PopBack() {
-    return this->buffer.popBack();
+	size--;
+    return *end();
+}
+
+template<class TYPE>
+inline TYPE Array<TYPE>::PopBack(size_t numElements)
+{
+	//TODO::
+	return TYPE();
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE
 Array<TYPE>::PopFront() {
-    return this->buffer.popFront();
+	startElem++;
+	size--;
+	TYPE* b = begin();
+    return *(b--);
+}
+
+template<class TYPE>
+inline TYPE Array<TYPE>::PopFront(size_t numElements)
+{
+	//TODO::
+	return TYPE();
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::Erase(int index) {
-    this->buffer.erase(index);
+Array<TYPE>::Erase(size_t index) {
+    //TODO::this->buffer.erase(index);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::EraseSwap(int index) {
-    this->buffer.eraseSwap(index);
+Array<TYPE>::EraseSwap(size_t index) {
+	//TODO::this->buffer.eraseSwap(index);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::EraseSwapBack(int index) {
-    this->buffer.eraseSwapBack(index);
+Array<TYPE>::EraseSwapBack(size_t index) {
+	//TODO::this->buffer.eraseSwapBack(index);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::EraseSwapFront(int index) {
-    this->buffer.eraseSwapFront(index);
+Array<TYPE>::EraseSwapFront(size_t index) {
+	//TODO::this->buffer.eraseSwapFront(index);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::EraseRange(int index, int num) {
-    this->buffer.eraseRange(index, num);
+Array<TYPE>::EraseRange(size_t index, size_t num) {
+	//TODO::this->buffer.eraseRange(index, num);
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> int
-Array<TYPE>::FindIndexLinear(const TYPE& elm, int startIndex, int endIndex) const {
-    const int size = this->buffer.size();
+template<class TYPE> size_t
+Array<TYPE>::FindIndexLinear(const TYPE& elm, size_t startIndex, size_t endIndex) const {
+	//TODO::
+	/*const int size = this->buffer.size();
     if (size > 0) {
         o_assert_dbg(startIndex < size);
         o_assert_dbg(this->buffer.buf);
@@ -440,80 +580,89 @@ Array<TYPE>::FindIndexLinear(const TYPE& elm, int startIndex, int endIndex) cons
                 return i;
             }
         }
-    }
+    }*/
     // fallthrough: not found
-    return InvalidIndex;
+    return 0;
 }
     
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE*
 Array<TYPE>::begin() {
-    return this->buffer._begin();
+	return ((TYPE*)memStart()) + startElem;
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE*
 Array<TYPE>::begin() const {
-    return this->buffer._begin();
+    return ((TYPE*)memStart()) + startElem;
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE*
 Array<TYPE>::end() {
-    return this->buffer._end();
+    return begin() +size;
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE*
 Array<TYPE>::end() const {
-    return this->buffer._end();
+    return begin() + size;
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::destroy() {
-    this->minGrow = 0;
-    this->maxGrow = 0;
-    this->buffer.destroy();
+    minGrow = 0;
+    maxGrow = 0;
+	startElem = 0;
+	size = 0;
+
+	//TODO:: dealocate Block
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::copy(const Array& rhs) {
-    this->minGrow = rhs.minGrow;
-    this->maxGrow = rhs.maxGrow;
-    this->buffer = rhs.buffer;
+    minGrow = rhs.minGrow;
+    maxGrow = rhs.maxGrow;
+	startElem = rhs.startElem;
+	size = rhs.size;
+
+	//TODO:: copy block
+
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::move(Array&& rhs) {
-    this->minGrow = rhs.minGrow;
-    this->maxGrow = rhs.maxGrow;
-    this->buffer  = std::move(rhs.buffer);
+    minGrow = rhs.minGrow;
+    maxGrow = rhs.maxGrow;
+	startElem = rhs.startElem;
+	size = rhs.size;
+	blockStart = rhs.blockStart; 
     // NOTE: don't reset minGrow/maxGrow, rhs is empty, but still a valid object!
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::adjustCapacity(int newCapacity) {
-    this->buffer.alloc(newCapacity, 0);
+Array<TYPE>::adjustCapacity(size_t newCapacity) {
+	Grow(newCapacity);
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> void
-Array<TYPE>::grow() {
-    const int curCapacity = this->buffer.capacity();
-    int growBy = curCapacity >> 1;
-    if (growBy < minGrow) {
-        growBy = minGrow;
-    }
-    else if (growBy > maxGrow) {
-        growBy = maxGrow;
-    }
-    o_assert_dbg(growBy > 0);
-    int newCapacity = curCapacity + growBy;
-    this->adjustCapacity(newCapacity);
-}
+//template<class TYPE> void
+//Array<TYPE>::grow() {
+//    const int curCapacity = this->buffer.capacity();
+//    int growBy = curCapacity >> 1;
+//    if (growBy < minGrow) {
+//        growBy = minGrow;
+//    }
+//    else if (growBy > maxGrow) {
+//        growBy = maxGrow;
+//    }
+//    o_assert_dbg(growBy > 0);
+//    int newCapacity = curCapacity + growBy;
+//    this->adjustCapacity(newCapacity);
+//}
 
-} // namespace Oryol
+//}

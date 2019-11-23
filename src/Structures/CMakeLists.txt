@@ -15,20 +15,35 @@ fips_begin_module(Structures)
         iBlock.h iBlock.cc 
 		iTable.h iTable.cc 
 		iArray.h iArray.cc 
-		iStruct.h iStruct.cc    
+		iStruct.h iStruct.cc 
+		iCountable.h
+		iDynamic.h
+		iQueue.h
+		iIndexable.h
+		iIterable.h
     )
 
     fips_dir(Types)
     fips_files(
-        VarInt.h      
+        VarInt.h   
+		TypeDescr.h
     )
 	
-	#fips_dir(Containers)
-    #fips_files(
-        #Array.h        ArrayMap.h        Slice.h        Buffer.h        HashSet.h
-        #KeyValuePair.h        Map.h        Queue.h        Set.h        StaticArray.h
-        #elementBuffer.h        InlineArray.h
-    #)
+	fips_dir(Containers)
+    fips_files(
+        Array.h
+        #ArrayMap.h
+        #Slice.h
+        #Buffer.h
+        #HashSet.h
+		#KeyValuePair.h
+        #Map.h
+        #Queue.h
+        #Set.h
+        #StaticArray.h
+        #elementBuffer.h
+        #InlineArray.h
+    )
 	
     #fips_dir(Memory)
     #fips_files(Memory.cc Memory.h)
