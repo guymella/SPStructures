@@ -24,6 +24,7 @@ public:
 	size_t GetPartitionSize(const size_t& index) const override;
 	void GrowPartition(const size_t& index) override;
 	void GrowPartition(const size_t& index, const size_t& NewSize) override;
+	void GrowPartition(const size_t& index, const size_t& NewSize, const size_t& frontPorch) override;
 
 	void* FindPartitionMem(size_t index) override;
 	void* MemStart();
@@ -59,7 +60,7 @@ Table::Table(iDBlock* parentBlock, const size_t& size) : _ParentBlock(parentBloc
 inline void Table::InitializeTable(const size_t& size)
 {//set contents of block to table and init
 	size_t headerSize = sizeof(baseTypes) + sizeof(size_t) * (size + 1)+ size;
-	if (ParentBlock()->Size() < headerSize) {
+	if (ParentBlock()->MemSize() < headerSize) {
 		ParentBlock()->Grow(headerSize);
 	}
 	//set type
@@ -76,7 +77,7 @@ inline void Table::InitializeTable(const size_t& size)
 
 bool Table::Initialized() const
 {
-	if (ParentBlock() && ParentBlock()->Size()) {
+	if (ParentBlock() && ParentBlock()->MemSize()) {
 		return ParentBlock()->Type() == baseTypes::MemTable;
 	}
 	return false;
@@ -135,7 +136,7 @@ inline void Table::GrowPartition(const size_t& index, const size_t& NewSize)
 
 	//TODO:: replace with copy map grow
 	if (growNeeded > 0)
-		ParentBlock()->Grow(ParentBlock()->Size() + needed);
+		ParentBlock()->Grow(ParentBlock()->MemSize() + needed);
 
 	//shift fallowing partitions
 	if (index < Size() - 1) {
@@ -156,6 +157,11 @@ inline void Table::GrowPartition(const size_t& index, const size_t& NewSize)
 	Index()[index] = NewSize;
 
 
+}
+
+inline void Table::GrowPartition(const size_t& index, const size_t& NewSize, const size_t& frontPorch)
+{
+	//todo::
 }
 
 inline void* Table::FindPartitionMem(size_t index)
@@ -228,7 +234,7 @@ inline size_t Table::UsedSpace() const
 
 inline size_t Table::FreeSpace() const
 {
-	return ParentBlock()->Size()-UsedSpace();
+	return ParentBlock()->MemSize()-UsedSpace();
 }
 
 inline const size_t* Table::Index() const

@@ -19,6 +19,7 @@
 		virtual size_t GetPartitionSize(const size_t& index) const = 0;
 		virtual void GrowPartition(const size_t& index) =0; // dumb grow partition
 		virtual void GrowPartition(const size_t& index, const size_t& NewSize) =0; // grow partition to specific size
+		virtual void GrowPartition(const size_t& index, const size_t& NewSize, const size_t& frontPorch) = 0; // grow partition to specific size
 		//void GrowPartition(const size_t& index, const size_t& NewSize, size_t* CopyMap); // grow partition to specific size with copy map
 		//iBlock* Push();  //add new partition to end of table
 		//iBlock* Push(const size_t& NewSize);

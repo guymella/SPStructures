@@ -19,7 +19,7 @@ public:
 	Block();
 	inline void InitializeBlock();
 
-	size_t Size() const override;
+	size_t MemSize() const override;
 	void* memStart() override;
 	const void* memStart() const override;
 
@@ -40,9 +40,10 @@ public:
 	DBlock(const size_t& size);
 	
 	bool Initialized() const;
-	size_t Size() const override;
+	size_t MemSize() const override;
 	void Grow() override;
 	void Grow(const size_t& newSize) override;
+	void Grow(const size_t& newSize, const size_t& frontPorch) override;
 	void * memStart() override;
 	const void* memStart() const override;
 
@@ -76,7 +77,7 @@ DBlock::DBlock(const size_t& size)  {
 	InitializeBlock(size);
 }
 
-inline size_t DBlock::Size() const
+inline size_t DBlock::MemSize() const
 {
 	if (Initialized())
 		return ((size_t*)blockStart)[0];
@@ -90,7 +91,7 @@ inline bool DBlock::Initialized() const
 
 inline void DBlock::Grow()
 {
-	size_t s = Size();
+	size_t s = MemSize();
 	if (s)
 		Grow((size_t)((double)s * 1.618));
 	else
@@ -101,14 +102,19 @@ inline void DBlock::Grow()
 
 inline void DBlock::Grow(const size_t& newSize)
 { 
-	size_t oldSize = Size();
+	Grow(newSize, 0);
+}
+inline void DBlock::Grow(const size_t& newSize, const size_t& frontPorch)
+{
+	size_t oldSize = MemSize();
 	if (newSize > oldSize)
 	{
 		void* oldBlock = blockStart;
 		void* oldStart = memStart();
 		InitializeBlock(newSize);
 		if (oldBlock) {// = 0 if was not initialized
-			memcpy(memStart(), oldStart, oldSize);
+			void* newStart = (uint8_t*)memStart() + frontPorch;
+			memcpy(newStart, oldStart, oldSize);
 			free(oldBlock);
 		}
 	}
@@ -130,7 +136,7 @@ inline void Block<SIZE>::InitializeBlock()
 }
 
 template<size_t SIZE>
-inline size_t Block<SIZE>::Size() const
+inline size_t Block<SIZE>::MemSize() const
 {
 	return SIZE;
 }

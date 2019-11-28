@@ -19,9 +19,10 @@ public:
 	Partition(iTable* parentTable, size_t index);
 	
 	
-	size_t Size() const override;
+	size_t MemSize() const override;
 	void Grow() override;
 	void Grow(const size_t& newSize) override;
+	void Grow(const size_t& newSize, const size_t& frontPorch) override;
 	void * memStart() override;
 	const void* memStart() const override;
 
@@ -39,7 +40,7 @@ Partition::Partition(iTable* parentTable, size_t index) : ParentTable(parentTabl
 
 }
 
-inline size_t Partition::Size() const
+inline size_t Partition::MemSize() const
 {
 	return ParentTable->GetPartitionSize(Index);
 }
@@ -52,6 +53,11 @@ inline void Partition::Grow()
 inline void Partition::Grow(const size_t& newSize)
 {
 	ParentTable->GrowPartition(Index, newSize);
+}
+
+inline void Partition::Grow(const size_t& newSize, const size_t& frontPorch)
+{
+	ParentTable->GrowPartition(Index, newSize, frontPorch);
 }
 
 inline void* Partition::memStart()

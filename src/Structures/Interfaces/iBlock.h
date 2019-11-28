@@ -12,7 +12,7 @@
 
 
 
-class iBlock : public iCountable {
+class iBlock : public iBlockCountable {
 public:
 	virtual void* memStart() = 0;
 	virtual const void* memStart() const = 0;
@@ -39,7 +39,7 @@ inline void* iBlock::headerStart() const {
 }
 
 inline baseTypes iBlock::Type() const {
-	if (Size()) {
+	if (MemSize()) {
 		return *((baseTypes*)memStart());
 	}
 	return baseTypes::Void;
@@ -50,7 +50,7 @@ inline void iBlock::SetType(baseTypes newType) {
 }
 
 inline void iDBlock::SetType(baseTypes newType) {
-	if (!Size()) {
+	if (!MemSize()) {
 		Grow(1);
 	}
 	iBlock::SetType(newType);

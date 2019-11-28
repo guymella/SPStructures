@@ -41,7 +41,7 @@
 
 //namespace Structures {
 
-template<class TYPE> class Array : public iDArray<TYPE> , public DBlock{
+template<class TYPE> class Array : public iDArray<TYPE>{
 public:
     /// default constructor
     Array();
@@ -71,6 +71,7 @@ public:
     size_t Size() const override;
     /// return true if empty
     //bool Empty() const override;
+	using iDArray<TYPE>::Empty;
     /// get capacity of array
     size_t Capacity() const override;
     /// get number of free slots at back of array
@@ -104,6 +105,7 @@ public:
 
 	void Grow() override; // just grow (very dumb grow = golden ratio)
 	void Grow(const size_t& newSize) override; //grow to specific size, copy all to front (dumb grow)
+	void Grow(const size_t& newSize, const size_t& frontPorch) override;
     /// trim capacity to size (this involves a re-alloc)
     void Trim() override;
     /// clear the array (deletes elements, keeps capacity)
@@ -118,8 +120,8 @@ public:
 	/// move-add element to back of array
 	TYPE& PushFront(TYPE&& elm);
     /// construct-add new element at back of array
-    template<class... ARGS> TYPE& PushBack(ARGS&&... args);
-	template<class... ARGS> TYPE& PushFront(ARGS&&... args);
+ //   template<class... ARGS> TYPE& PushBack(ARGS&&... args);
+	//template<class... ARGS> TYPE& PushFront(ARGS&&... args);
     /// copy-insert element at index, keep array order
     void Insert(size_t index, const TYPE& elm) override;
     /// move-insert element at index, keep array order
@@ -143,7 +145,7 @@ public:
     void EraseRange(size_t index, size_t num) override;
     
     /// find element index with slow linear search, return InvalidIndex if not found
-	size_t FindIndexLinear(const TYPE& elm, size_t startIndex=0, size_t endIndex=InvalidIndex) const;
+	size_t FindIndexLinear(const TYPE& elm, size_t startIndex=0, size_t endIndex=std::numeric_limits<size_t>::max()) const;
     
     /// C++ conform begin
     TYPE* begin() override;
@@ -165,18 +167,25 @@ private:
     void adjustCapacity(size_t newCapacity);
     /// grow to make room
     void grow();
+
+	iDBlock* Block();
+	const iDBlock* Block() const;
+
+	size_t maxGrow();
     
-	size_t startElem;
-	size_t size;
-    size_t minGrow;
-    size_t maxGrow;
+	size_t startElem = 0;
+	size_t size = 0;
+    size_t minGrow = 128;
+    //size_t maxGrow;
+
+	DBlock memoryBlock;
+	
 };
 
 //------------------------------------------------------------------------------
 template<class TYPE>
-Array<TYPE>::Array() :
-minGrow(128),
-maxGrow(128) {
+Array<TYPE>::Array()  : minGrow(128)
+{
     // empty
 }
 
@@ -273,7 +282,7 @@ Array<TYPE>::Size() const {
 //------------------------------------------------------------------------------
 template<class TYPE> size_t
 Array<TYPE>::Capacity() const {
-    return DBlock::Size() / sizeof(TYPE);
+    return Block()->MemSize() / sizeof(TYPE);
 }
 
 //------------------------------------------------------------------------------
@@ -389,13 +398,28 @@ inline void Array<TYPE>::ShiftFront(const size_t& numShift)
 template<class TYPE>
 inline void Array<TYPE>::Grow()
 {
-	//TODO::
+	if (!Block()->MemSize()) {
+		Grow(minGrow);
+	} else {
+		size_t newCap = (size_t)((double)Capacity() * 1.618);
+		Grow(newCap);
+	}
 }
 
 template<class TYPE>
 inline void Array<TYPE>::Grow(const size_t& newSize)
 {
-	//TODO::
+	Grow(newSize, 0);
+}
+
+template<class TYPE>
+inline void Array<TYPE>::Grow(const size_t& newCap, const size_t& frontPorch)
+{
+	size_t newFP = newCap / 4;
+	newFP -= SpareFront();
+	newFP += frontPorch;
+	Block()->Grow(newCap * sizeof(TYPE), newFP * sizeof(TYPE));
+	startElem += newFP;
 }
 
 //------------------------------------------------------------------------------
@@ -477,27 +501,27 @@ Array<TYPE>::Insert(size_t index, TYPE&& elm) {
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> template<class... ARGS> TYPE&
-Array<TYPE>::PushBack(ARGS&&... args) {
-	if (!SpareBack())
-		Grow();
-	size++;
-	Back() = std::forward<ARGS>(args)...;
-    return Back();
-}
-
-template<class TYPE>
-template<class ...ARGS>
-inline TYPE& Array<TYPE>::PushFront(ARGS&& ...args)
-{
-	if (!SpareFront())
-		Grow();
-
-	startElem--;
-	size++;
-	Front() = std::forward<ARGS>(args)...;
-	return Front();
-}
+//template<class TYPE> template<class... ARGS> TYPE&
+//Array<TYPE>::PushBack(ARGS&&... args) {
+//	if (!SpareBack())
+//		Grow();
+//	size++;
+//	Back() = std::forward<ARGS>(args)...;
+//    return Back();
+//}
+//
+//template<class TYPE>
+//template<class ...ARGS>
+//inline TYPE& Array<TYPE>::PushFront(ARGS&& ...args)
+//{
+//	if (!SpareFront())
+//		Grow();
+//
+//	startElem--;
+//	size++;
+//	Front() = std::forward<ARGS>(args)...;
+//	return Front();
+//}
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE
@@ -588,13 +612,13 @@ Array<TYPE>::FindIndexLinear(const TYPE& elm, size_t startIndex, size_t endIndex
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE*
 Array<TYPE>::begin() {
-	return ((TYPE*)memStart()) + startElem;
+	return ((TYPE*)(Block()->memStart())) + startElem;
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE*
 Array<TYPE>::begin() const {
-    return ((TYPE*)memStart()) + startElem;
+    return ((TYPE*)(Block()->memStart())) + startElem;
 }
 
 //------------------------------------------------------------------------------
@@ -613,7 +637,7 @@ Array<TYPE>::end() const {
 template<class TYPE> void
 Array<TYPE>::destroy() {
     minGrow = 0;
-    maxGrow = 0;
+    //maxGrow = 0;
 	startElem = 0;
 	size = 0;
 
@@ -624,7 +648,7 @@ Array<TYPE>::destroy() {
 template<class TYPE> void
 Array<TYPE>::copy(const Array& rhs) {
     minGrow = rhs.minGrow;
-    maxGrow = rhs.maxGrow;
+    //maxGrow = rhs.maxGrow;
 	startElem = rhs.startElem;
 	size = rhs.size;
 
@@ -636,7 +660,7 @@ Array<TYPE>::copy(const Array& rhs) {
 template<class TYPE> void
 Array<TYPE>::move(Array&& rhs) {
     minGrow = rhs.minGrow;
-    maxGrow = rhs.maxGrow;
+    //maxGrow = rhs.maxGrow;
 	startElem = rhs.startElem;
 	size = rhs.size;
 	blockStart = rhs.blockStart; 
@@ -647,6 +671,24 @@ Array<TYPE>::move(Array&& rhs) {
 template<class TYPE> void
 Array<TYPE>::adjustCapacity(size_t newCapacity) {
 	Grow(newCapacity);
+}
+
+template<class TYPE>
+inline iDBlock* Array<TYPE>::Block()
+{
+	return &memoryBlock;
+}
+
+template<class TYPE>
+inline const iDBlock* Array<TYPE>::Block() const
+{
+	return &memoryBlock;
+}
+
+template<class TYPE>
+inline size_t Array<TYPE>::maxGrow()
+{
+	return (size_t)(((double)Size())*1.62);//golden ratio
 }
 
 //------------------------------------------------------------------------------

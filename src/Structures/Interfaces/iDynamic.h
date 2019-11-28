@@ -23,6 +23,7 @@
 	public:
 		virtual void Grow() = 0; // just grow (very dumb grow = golden ratio)
 		virtual void Grow(const size_t& newSize) = 0; //grow to specific size, copy all to front (dumb grow)
+		virtual void Grow(const size_t& newSize, const size_t& frontPorch) = 0; //grow to specific size, copy all to front plus offsaet (dumb grow)
 		//void Grow(const size_t& SizeFactor, size_t* CopyMap); //grow to allocation block size factor, copy by map (smart grow)
 	};
 
