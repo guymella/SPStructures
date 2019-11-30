@@ -102,6 +102,7 @@ public:
 	void Reserve(const size_t& numElementsFront, const size_t& numElementsBack) override;
 	void ShiftBack(const size_t& numShift) override; //free up spare without realloc
 	void ShiftFront(const size_t& numShift) override;
+	void ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount ) override;
 
 	void Grow() override; // just grow (very dumb grow = golden ratio)
 	void Grow(const size_t& newSize) override; //grow to specific size, copy all to front (dumb grow)
@@ -391,6 +392,35 @@ inline void Array<TYPE>::ShiftFront(const size_t& numShift)
 }
 
 template<class TYPE>
+inline void Array<TYPE>::ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount)
+{
+	if (StartIndex >= Size())
+		return;
+
+	if (StartIndex + numElements > Size())
+		numElements = Size() - StartIndex;
+
+	int64_t ff = StartIndex + numElements + shiftAmmount;
+	if (ff > (int64_t)Size())
+		numElements -= ff - Size();
+
+	ff = StartIndex + shiftAmmount;
+	if (ff < 0)
+		StartIndex += abs(ff);
+
+	TYPE* src = begin() + StartIndex;
+	void* dst = src + shiftAmmount;
+	std::memmove(dst, src, numElements * sizeof(TYPE));
+
+	if (shiftAmmount < 0) {
+		src += numElements + shiftAmmount;
+	}
+	
+	//clear gap
+	std::memset(src, 0, abs(shiftAmmount) * sizeof(TYPE));
+}
+
+template<class TYPE>
 inline void Array<TYPE>::Grow()
 {
 	if (!Block()->Size()) {
@@ -420,7 +450,13 @@ inline void Array<TYPE>::Grow(const size_t& newCap, const size_t& frontPorch)
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::Trim() {
-    adjustCapacity(Size());
+	CopyRange cpy;
+	cpy.dstOffset = 0;
+	cpy.size = Size() * sizeof(TYPE);
+	cpy.src = begin();
+	Block()->GrowCopyMap(cpy.size, &cpy, 1);
+	startElem = 0;
+
 }
 
 //------------------------------------------------------------------------------
@@ -516,24 +552,26 @@ Array<TYPE>::Insert(size_t index, TYPE&& elm) {
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE
 Array<TYPE>::PopBack() {
+	TYPE * e = end();
+	e--;
 	size--;
-    return *end();
+    return *e;
 }
 
 template<class TYPE>
 inline TYPE Array<TYPE>::PopBack(size_t numElements)
 {
-	//TODO::
+	//TODO::return array with elements popped off
 	return TYPE();
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE
 Array<TYPE>::PopFront() {
-	startElem++;
-	size--;
-	TYPE* b = begin();
-    return *(b--);
+	TYPE * b = begin();
+	startElem++;	
+	size--;	
+    return *b;
 }
 
 template<class TYPE>
@@ -546,31 +584,33 @@ inline TYPE Array<TYPE>::PopFront(size_t numElements)
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::Erase(size_t index) {
-    //TODO::this->buffer.erase(index);
+	EraseRange(index, 1);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::EraseSwap(size_t index) {
-	//TODO::this->buffer.eraseSwap(index);
+	EraseSwapBack(index);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::EraseSwapBack(size_t index) {
-	//TODO::this->buffer.eraseSwapBack(index);
+	begin()[index] = PopBack();
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::EraseSwapFront(size_t index) {
-	//TODO::this->buffer.eraseSwapFront(index);
+	begin()[index-1] = PopFront();
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::EraseRange(size_t index, size_t num) {
-	//TODO::this->buffer.eraseRange(index, num);
+	if (index + num < Size())
+		ShiftRange(index + num, Size(), -(int64_t)num);
+	size-=num;
 }
 
 //------------------------------------------------------------------------------

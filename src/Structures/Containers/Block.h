@@ -117,8 +117,8 @@ inline void DBlock::Grow(const size_t& newSize)
 inline void DBlock::Grow(const size_t& newSize, const size_t& frontPorch)
 {
 	size_t oldSize = Size();
-	if (newSize > oldSize)
-	{
+	/*if (newSize > oldSize)
+	{*/
 		void* oldBlock = blockStart;
 		void* oldStart = begin();
 		InitializeBlock(newSize);
@@ -127,7 +127,7 @@ inline void DBlock::Grow(const size_t& newSize, const size_t& frontPorch)
 			memcpy(newStart, oldStart, oldSize);
 			free(oldBlock);
 		}
-	}
+	//}
 }
 inline void DBlock::GrowCopyMap(const size_t& newSize, CopyRange* CopyMap, size_t CopyMapSize)
 {

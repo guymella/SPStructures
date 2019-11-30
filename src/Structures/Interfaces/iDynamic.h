@@ -51,4 +51,5 @@ struct CopyRange {
 		virtual void Reserve(const size_t& numElementsFront, const size_t& numElementsBack) = 0;
 		virtual void ShiftBack(const size_t& numShift) = 0; //free up spare without realloc
 		virtual void ShiftFront(const size_t& numShift) = 0;
+		virtual void ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount) =0;
 	};
