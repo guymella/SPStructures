@@ -616,25 +616,17 @@ Array<TYPE>::EraseRange(size_t index, size_t num) {
 //------------------------------------------------------------------------------
 template<class TYPE> size_t
 Array<TYPE>::FindIndexLinear(const TYPE& elm, size_t startIndex, size_t endIndex) const {
-	//TODO::
-	/*const int size = this->buffer.size();
-    if (size > 0) {
-        o_assert_dbg(startIndex < size);
-        o_assert_dbg(this->buffer.buf);
-        if (InvalidIndex == endIndex) {
-            endIndex = size;
-        }
-        else {
-            o_assert_dbg(endIndex <= size);
-        }
-        o_assert_dbg(startIndex <= endIndex);
-        for (int i = startIndex; i < endIndex; i++) {
-            TYPE* ptr = &(this->buffer.buf[this->buffer.start + i]);
-            if (elm == *ptr) {
+	if (!Empty()) {
+        if (endIndex > Size()) 
+            endIndex = Size();
+        
+		const TYPE* bgn = begin();
+        for (size_t i = startIndex; i < endIndex; i++) {
+            if (elm == bgn[i]) {
                 return i;
             }
         }
-    }*/
+    }
     // fallthrough: not found
     return 0;
 }
