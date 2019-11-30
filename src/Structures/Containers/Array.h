@@ -46,18 +46,18 @@ public:
     /// default constructor
     Array();
     /// copy constructor (truncates to actual size)
-    //Array(const Array& rhs);
+    Array(const Array& rhs);
     /// move constructor (same capacity and size)
-    //Array(Array&& rhs);
+    Array(Array&& rhs);
     /// initialize from initializer list
     //Array(std::initializer_list<TYPE> l);
     /// destructor
     ~Array();
 
     /// copy-assignment operator (truncates to actual size)
-    //void operator=(const Array& rhs);
+    void operator=(const Array& rhs);
     /// move-assignment operator (same capacity and size)
-    //void operator=(Array&& rhs);
+    void operator=(Array&& rhs);
     
     /// set allocation strategy
     //void SetAllocStrategy(int minGrow_, int maxGrow_=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
@@ -147,14 +147,16 @@ public:
     /// find element index with slow linear search, return InvalidIndex if not found
 	size_t FindIndexLinear(const TYPE& elm, size_t startIndex=0, size_t endIndex=std::numeric_limits<size_t>::max()) const;
     
+	void insertBlank(const size_t& index, size_t count = 1);
+
     /// C++ conform begin
-    TYPE* begin() override;
+    TYPE* begin(const int64_t& offset = 0) override;
     /// C++ conform begin
-    const TYPE* begin() const override;
+    const TYPE* begin(const int64_t& offset = 0) const override;
     /// C++ conform end
-    TYPE* end() override;
+    TYPE* end(const int64_t& offset = 0) override;
     /// C++ conform end
-    const TYPE* end() const override;
+    const TYPE* end(const int64_t& offset = 0) const override;
     
 private:
     /// destroy array resources
@@ -165,8 +167,7 @@ private:
     void move(Array&& rhs);
     /// reallocate with new capacity
     void adjustCapacity(size_t newCapacity);
-    /// grow to make room
-    void grow();
+    
 
 	iDBlock* Block();
 	const iDBlock* Block() const;
@@ -190,16 +191,16 @@ Array<TYPE>::Array()  : minGrow(128)
 }
 
 //------------------------------------------------------------------------------
-//template<class TYPE>
-//Array<TYPE>::Array(const Array& rhs) {
-//    this->copy(rhs);
-//}
+template<class TYPE>
+Array<TYPE>::Array(const Array& rhs) {
+    this->copy(rhs);
+}
 //
 ////------------------------------------------------------------------------------
-//template<class TYPE>
-//Array<TYPE>::Array(Array&& rhs) {
-//    this->move(std::move(rhs));
-//}
+template<class TYPE>
+Array<TYPE>::Array(Array&& rhs) {
+    this->move(std::move(rhs));
+}
 //
 ////------------------------------------------------------------------------------
 //template<class TYPE>
@@ -219,25 +220,25 @@ Array<TYPE>::~Array() {
 };
 
 //------------------------------------------------------------------------------
-//template<class TYPE> void
-//Array<TYPE>::operator=(const Array<TYPE>& rhs) {
-//    /// @todo: this should be optimized when rhs.size() < this->capacity()!
-//    if (&rhs != this) {
-//        this->destroy();
-//        this->copy(rhs);
-//    }
-//}
+template<class TYPE> void
+Array<TYPE>::operator=(const Array<TYPE>& rhs) {
+    /// @todo: this should be optimized when rhs.size() < this->capacity()!
+    if (&rhs != this) {
+        this->destroy();
+        this->copy(rhs);
+    }
+}
 //
 ////------------------------------------------------------------------------------
-//template<class TYPE> void
-//Array<TYPE>::operator=(Array<TYPE>&& rhs) {
-//    /// @todo: this should be optimized when rhs.size() < this->capacity()!
-//    if (&rhs != this) {
-//        this->destroy();
-//        this->move(std::move(rhs));
-//    }
-//}
-//    
+template<class TYPE> void
+Array<TYPE>::operator=(Array<TYPE>&& rhs) {
+    /// @todo: this should be optimized when rhs.size() < this->capacity()!
+    if (&rhs != this) {
+        this->destroy();
+        this->move(std::move(rhs));
+    }
+}
+
 ////------------------------------------------------------------------------------
 //template<class TYPE> void
 //Array<TYPE>::SetAllocStrategy(int minGrow_, int maxGrow_) {
@@ -274,15 +275,9 @@ Array<TYPE>::Size() const {
 }
 
 //------------------------------------------------------------------------------
-//template<class TYPE> bool
-//Array<TYPE>::Empty() const {
-//    return this->buffer.size() == 0;
-//}
-
-//------------------------------------------------------------------------------
 template<class TYPE> size_t
 Array<TYPE>::Capacity() const {
-    return Block()->MemSize() / sizeof(TYPE);
+    return Block()->Size() / sizeof(TYPE);
 }
 
 //------------------------------------------------------------------------------
@@ -336,7 +331,7 @@ template<class TYPE> TYPE&
 Array<TYPE>::Back() {
 	//TODO:: handle empty
 	TYPE* e = end();
-	return *(e--);
+	return *(--e);
 }
 
 //------------------------------------------------------------------------------
@@ -344,7 +339,7 @@ template<class TYPE> const TYPE&
 Array<TYPE>::Back() const {
 	//TODO:: handle empty
 	const TYPE* e = end();
-    return *(e--);
+    return *(--e);
 }
 
 //------------------------------------------------------------------------------
@@ -398,7 +393,7 @@ inline void Array<TYPE>::ShiftFront(const size_t& numShift)
 template<class TYPE>
 inline void Array<TYPE>::Grow()
 {
-	if (!Block()->MemSize()) {
+	if (!Block()->Size()) {
 		Grow(minGrow);
 	} else {
 		size_t newCap = (size_t)((double)Capacity() * 1.618);
@@ -453,6 +448,7 @@ Array<TYPE>::PushBack(TYPE&& elm) {
 	}
 	size++;
 	Back() = std::move(elm);
+	TYPE db = Back();
 	return Back();
 }
 
@@ -483,21 +479,15 @@ inline TYPE& Array<TYPE>::PushFront(TYPE&& elm)
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::Insert(size_t index, const TYPE& elm) {
-	if (!SpareBack() && !SpareFront())
-		Grow();
-	//TODO:: insert
-    //this->buffer.insert(index, elm);
+	insertBlank(index);
+	begin()[index] = elm;
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::Insert(size_t index, TYPE&& elm) {
-	if (!SpareBack() && !SpareFront())
-		Grow();
-
-	//TODO:: insert
-	//this->buffer.insert(index, std::move(elm));
-
+	insertBlank(index);
+	begin()[index] = std::move(elm);
 }
 
 //------------------------------------------------------------------------------
@@ -608,29 +598,76 @@ Array<TYPE>::FindIndexLinear(const TYPE& elm, size_t startIndex, size_t endIndex
     // fallthrough: not found
     return 0;
 }
+
+template<class TYPE>
+inline void Array<TYPE>::insertBlank(const size_t& index, size_t count)
+{
+	bool canShiftFwd = SpareBack() > count;
+	bool canShiftBck = SpareFront() > count;
+
+	if (canShiftFwd || canShiftBck) {
+		//do the shift
+		bool shiftfwd = (index >= Size() / 2);
+		if (shiftfwd && canShiftFwd || !shiftfwd && !canShiftBck) {
+			//shift forward
+			size_t ss = Size() - index;
+			TYPE* src = begin() + index;
+			void* dst = src + count;
+			std::memmove(dst, src, ss * sizeof(TYPE));
+		}
+		else
+		{
+			//shiftback
+			size_t ss = index;
+			TYPE* src = begin();
+			void* dst = src - count;
+			std::memmove(dst, src, index*sizeof(TYPE));
+			startElem -= count;
+		}		
+	}
+	else {
+		CopyRange copyMap[2];
+		size_t newSize = Size() + count;
+		size_t newFP = newSize / 4;
+		newSize += newFP * 3;
+
+		copyMap[0].dstOffset = sizeof(TYPE) * newFP;
+		copyMap[0].size = index * sizeof(TYPE);
+		copyMap[0].src = begin();
+		copyMap[1].dstOffset = (newFP + index + count) *sizeof(TYPE);
+		copyMap[1].size = (Size() - index) * sizeof(TYPE);
+		copyMap[1].src = begin()+index;
+
+		Block()->GrowCopyMap(newSize, copyMap, 2);
+		startElem = newFP;
+	}
+
+	size += count;
+	
+}
     
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE*
-Array<TYPE>::begin() {
-	return ((TYPE*)(Block()->memStart())) + startElem;
+Array<TYPE>::begin(const int64_t& offset) {
+	return ((TYPE*)(Block()->memStart())) + startElem+offset;
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE*
-Array<TYPE>::begin() const {
-    return ((TYPE*)(Block()->memStart())) + startElem;
+Array<TYPE>::begin(const int64_t& offset) const {
+    return ((TYPE*)(Block()->memStart())) + startElem + offset;
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE*
-Array<TYPE>::end() {
-    return begin() +size;
+Array<TYPE>::end(const int64_t& offset) {
+    return begin(offset) +size;
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE*
-Array<TYPE>::end() const {
-    return begin() + size;
+Array<TYPE>::end(const int64_t& offset) const {
+    return begin(offset) + size;
 }
 
 //------------------------------------------------------------------------------
@@ -652,7 +689,7 @@ Array<TYPE>::copy(const Array& rhs) {
 	startElem = rhs.startElem;
 	size = rhs.size;
 
-	//TODO:: copy block
+	memoryBlock = rhs.memoryBlock;
 
 }
 
@@ -663,13 +700,16 @@ Array<TYPE>::move(Array&& rhs) {
     //maxGrow = rhs.maxGrow;
 	startElem = rhs.startElem;
 	size = rhs.size;
-	blockStart = rhs.blockStart; 
+	memoryBlock = std::move(rhs.memoryBlock);
     // NOTE: don't reset minGrow/maxGrow, rhs is empty, but still a valid object!
+	rhs.size = 0;
+	rhs.startElem = 0;
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::adjustCapacity(size_t newCapacity) {
+	//TODO::
 	Grow(newCapacity);
 }
 

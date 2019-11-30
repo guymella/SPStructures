@@ -19,55 +19,61 @@ public:
 	Partition(iTable* parentTable, size_t index);
 	
 	
-	size_t MemSize() const override;
+	size_t Size() const override;
 	void Grow() override;
 	void Grow(const size_t& newSize) override;
 	void Grow(const size_t& newSize, const size_t& frontPorch) override;
+	void GrowCopyMap(const size_t& newSize, CopyRange* CopyMap, size_t CopyMapSize) override;
 	void * memStart() override;
 	const void* memStart() const override;
 
 private:
 	iTable* ParentTable = 0;
-	size_t Index;
+	size_t TableIndex;
 	//dynamic size is stored inline at beggining of memory block
 
 };
 
 
 
-Partition::Partition(iTable* parentTable, size_t index) : ParentTable(parentTable), Index(index)
+Partition::Partition(iTable* parentTable, size_t index) : ParentTable(parentTable), TableIndex(index)
 {
 
 }
 
-inline size_t Partition::MemSize() const
+inline size_t Partition::Size() const
 {
-	return ParentTable->GetPartitionSize(Index);
+	return ParentTable->GetPartitionSize(TableIndex);
 }
 
 inline void Partition::Grow()
 {
-	ParentTable->GrowPartition(Index);
+	ParentTable->GrowPartition(TableIndex);
 }
 
 inline void Partition::Grow(const size_t& newSize)
 {
-	ParentTable->GrowPartition(Index, newSize);
+	ParentTable->GrowPartition(TableIndex, newSize);
 }
 
 inline void Partition::Grow(const size_t& newSize, const size_t& frontPorch)
 {
-	ParentTable->GrowPartition(Index, newSize, frontPorch);
+	ParentTable->GrowPartition(TableIndex, newSize, frontPorch);
+}
+
+inline void Partition::GrowCopyMap(const size_t& newSize, CopyRange* CopyMap, size_t CopyMapSize)
+{
+	//TODO::
 }
 
 inline void* Partition::memStart()
 {
-	return ParentTable->FindPartitionMem(Index);
+	return ParentTable->FindPartitionMem(TableIndex);
 }
 
 inline const void* Partition::memStart() const
 {
-	return ParentTable->FindPartitionMem(Index);
+	return ParentTable->FindPartitionMem(TableIndex);
 }
 
 

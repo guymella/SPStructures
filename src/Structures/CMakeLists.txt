@@ -12,15 +12,17 @@ fips_begin_module(Structures)
 
     fips_dir(interfaces)
     fips_files(
-        iBlock.h iBlock.cc 
-		iTable.h iTable.cc 
-		iArray.h iArray.cc 
-		iStruct.h iStruct.cc 
+        iBlock.h 
+		iTable.h
+		iArray.h
+		iStruct.h iStruct.cc
 		iCountable.h
 		iDynamic.h
 		iQueue.h
 		iIndexable.h
 		iIterable.h
+		iIterator.h
+		iStandard.h
     )
 
     fips_dir(Types)

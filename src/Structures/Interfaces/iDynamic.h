@@ -6,6 +6,12 @@
     @brief interface for linear structures with dynamic size, and preallocated free space
 */
 
+struct CopyRange {
+	size_t dstOffset;
+	void* src;
+	size_t size;
+	};
+
 
 	class iDynamicCap{
 	public:
@@ -24,7 +30,7 @@
 		virtual void Grow() = 0; // just grow (very dumb grow = golden ratio)
 		virtual void Grow(const size_t& newSize) = 0; //grow to specific size, copy all to front (dumb grow)
 		virtual void Grow(const size_t& newSize, const size_t& frontPorch) = 0; //grow to specific size, copy all to front plus offsaet (dumb grow)
-		//void Grow(const size_t& SizeFactor, size_t* CopyMap); //grow to allocation block size factor, copy by map (smart grow)
+		//virtual void Grow(const size_t& newSize, CopyRange* CopyMap, size_t CopyMapSize) = 0; //grow to allocation block size factor, copy by map (smart grow)
 	};
 
 	class iDynamicFront {

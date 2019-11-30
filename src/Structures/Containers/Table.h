@@ -41,6 +41,7 @@ private:
 	
 
 	iDBlock* _ParentBlock = 0;
+	size_t partitionCount = 0;
 	//dynamic size is stored inline at beggining of memory block
 
 };
@@ -60,35 +61,27 @@ Table::Table(iDBlock* parentBlock, const size_t& size) : _ParentBlock(parentBloc
 inline void Table::InitializeTable(const size_t& size)
 {//set contents of block to table and init
 	size_t headerSize = sizeof(baseTypes) + sizeof(size_t) * (size + 1)+ size;
-	if (ParentBlock()->MemSize() < headerSize) {
+	if (ParentBlock()->Size() < headerSize) {
 		ParentBlock()->Grow(headerSize);
 	}
 	//set type
-	ParentBlock()->SetType(baseTypes::MemTable);
+	//ParentBlock()->SetType(baseTypes::MemTable);
 	//set header
-	size_t* s = (size_t*)ParentBlock()->headerStart();
-	s[0] = size;
-	baseTypes* m = (baseTypes*)MemStart();
-	for (size_t i = 0; i < size; i++) {
-		s[i+1] = 1;
-		m[i] = baseTypes::Void;
+	size_t* s = (size_t*)ParentBlock()->memStart();
+	partitionCount = size;
+	for (size_t i = 0; i < partitionCount; i++) {
+		s[i] = 1;//partitions must have non 0 size //todo:: could fix this but requires more prework on grow partion
 	}
 }
 
 bool Table::Initialized() const
 {
-	if (ParentBlock() && ParentBlock()->MemSize()) {
-		return ParentBlock()->Type() == baseTypes::MemTable;
-	}
-	return false;
+	return partitionCount;
 }
 
 size_t Table::Size() const
 {
-	if (Initialized())
-		return *((size_t*)(ParentBlock()->headerStart()));
-
-	return 0;
+	return partitionCount;
 }
 
 inline iDBlock* Table::ParentBlock()
@@ -136,7 +129,7 @@ inline void Table::GrowPartition(const size_t& index, const size_t& NewSize)
 
 	//TODO:: replace with copy map grow
 	if (growNeeded > 0)
-		ParentBlock()->Grow(ParentBlock()->MemSize() + needed);
+		ParentBlock()->Grow(ParentBlock()->Size() + needed);
 
 	//shift fallowing partitions
 	if (index < Size() - 1) {
@@ -182,14 +175,14 @@ inline void* Table::FindPartitionMem(size_t index)
 
 inline void* Table::MemStart()
 {
-	uint8_t* b = (uint8_t*)ParentBlock()->headerStart();
+	uint8_t* b = (uint8_t*)ParentBlock()->memStart();
 	//size_t db = (size_t)b;
 	return b + IndexSpace(); //mem starts after index
 }
 
 inline const void* Table::MemStart() const
 {
-	uint8_t* b = (uint8_t*)ParentBlock()->headerStart();
+	uint8_t* b = (uint8_t*)ParentBlock()->memStart();
 	//size_t db = (size_t)b;
 	return b + IndexSpace(); //mem starts after index
 }
@@ -234,15 +227,15 @@ inline size_t Table::UsedSpace() const
 
 inline size_t Table::FreeSpace() const
 {
-	return ParentBlock()->MemSize()-UsedSpace();
+	return ParentBlock()->Size()-UsedSpace();
 }
 
 inline const size_t* Table::Index() const
 {
-	return (size_t*)ParentBlock()->headerStart()+1;
+	return (size_t*)ParentBlock()->begin();
 }
 
 inline size_t* Table::Index()
 {
-	return (size_t*)ParentBlock()->headerStart() + 1;
+	return (size_t*)ParentBlock()->begin();
 }
