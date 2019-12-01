@@ -431,7 +431,7 @@ bool testArray() {
 	CHECK(array6[6] == 12);
 
 	// MakeSlice
-	/*Array<int> array7 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+	Array<int> array7 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 	Slice<int> slice = array7.MakeSlice(3, 4);
 	CHECK(slice.Size() == 4);
 	CHECK(slice.Offset() == 3);
@@ -442,22 +442,22 @@ bool testArray() {
 	CHECK(slice.begin() == &array7[3]);
 	CHECK(slice.end() == &array7[7]);
 	slice[0] = 123;
-	CHECK(array7[3] == 123);*/
+	CHECK(array7[3] == 123);
 
 	// array view over full array
-	/*slice = array7.MakeSlice();
+	slice = array7.MakeSlice();
 	CHECK(slice.Size() == 10);
 	CHECK(slice.Offset() == 0);
 	CHECK(slice[0] == 1);
-	CHECK(slice[9] == 10);*/
+	CHECK(slice[9] == 10);
 
 	// fixed capacity
-	/*Array<int> array8;
+	Array<int> array8;
 	array8.SetFixedCapacity(128);
 	CHECK(array8.Size() == 0);
 	CHECK(array8.Capacity() == 128);
 	CHECK(array8.GetMinGrow() == 0);
-	CHECK(array8.GetMaxGrow() == 0);*/
+	CHECK(array8.GetMaxGrow() == 0);
 
 	return true;
 }

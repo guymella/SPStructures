@@ -33,7 +33,7 @@
 */
 //#include "Core/Config.h"
 //#include "Core/Containers/elementBuffer.h"
-//#include "Core/Containers/Slice.h"
+#include "Structures/Containers/Slice.h"
 #include "Structures/Interfaces/iArray.h"
 #include "Structures/Containers/Block.h"
 
@@ -41,7 +41,7 @@
 
 //namespace Structures {
 
-template<class TYPE> class Array : public iDArray<TYPE>{
+template<class TYPE> class Array : public iDArray<TYPE>, public iSliceable<TYPE>{
 public:
     /// default constructor
     Array();
@@ -50,7 +50,7 @@ public:
     /// move constructor (same capacity and size)
     Array(Array&& rhs);
     /// initialize from initializer list
-    //Array(std::initializer_list<TYPE> l);
+    Array(std::initializer_list<TYPE> l);
     /// destructor
     ~Array();
 
@@ -93,7 +93,7 @@ public:
     /// read-only access to last element (must exist)
     const TYPE& Back() const override;
     /// get a slice into the array (beware of iterator-invalidation!)
-    //Slice<TYPE> MakeSlice(int offset=0, int numItems=EndOfRange);
+    Slice<TYPE> MakeSlice(size_t offset=0, size_t numItems= std::numeric_limits<size_t>::max()) override;
 
     /// increase capacity to hold at least numElements more elements
 	void ReserveFront(const size_t& numElements) override;
@@ -146,7 +146,7 @@ public:
     void EraseRange(size_t index, size_t num) override;
     
     /// find element index with slow linear search, return InvalidIndex if not found
-	size_t FindIndexLinear(const TYPE& elm, size_t startIndex=0, size_t endIndex=std::numeric_limits<size_t>::max()) const;
+	//size_t FindIndexLinear(const TYPE& elm, size_t startIndex=0, size_t endIndex=std::numeric_limits<size_t>::max()) const;
     
 	void insertBlank(const size_t& index, size_t count = 1);
 
@@ -204,15 +204,13 @@ Array<TYPE>::Array(Array&& rhs) {
 }
 //
 ////------------------------------------------------------------------------------
-//template<class TYPE>
-//Array<TYPE>::Array(std::initializer_list<TYPE> l) :
-//minGrow(ORYOL_CONTAINER_DEFAULT_MIN_GROW),
-//maxGrow(ORYOL_CONTAINER_DEFAULT_MAX_GROW) {
-//    this->Reserve(int(l.size()));
-//    for (const auto& elm : l) {
-//        this->Add(elm);
-//    }
-//}
+template<class TYPE>
+Array<TYPE>::Array(std::initializer_list<TYPE> l) :minGrow(128) {
+    this->Reserve(int(l.size()));
+    for (const auto& elm : l) {
+        this->PushBack(elm);
+    }
+}
 
 //------------------------------------------------------------------------------
 template<class TYPE>
@@ -344,13 +342,13 @@ Array<TYPE>::Back() const {
 }
 
 //------------------------------------------------------------------------------
-//template<class TYPE> Slice<TYPE>
-//Array<TYPE>::MakeSlice(int offset, int numItems) {
-//    if (numItems == EndOfRange) {
-//        numItems = this->buffer.size() - offset;
-//    }
-//    return Slice<TYPE>(this->buffer.buf, this->buffer.size(), offset, numItems);
-//}
+template<class TYPE> Slice<TYPE>
+Array<TYPE>::MakeSlice(size_t offset, size_t numItems) {
+    if (offset+numItems > Size()) {
+        numItems = Size() - offset;
+    }
+    return Slice<TYPE>(begin(), Size(), offset, numItems);
+}
 
 template<class TYPE>
 inline void Array<TYPE>::ReserveFront(const size_t& numElements)
@@ -614,22 +612,22 @@ Array<TYPE>::EraseRange(size_t index, size_t num) {
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> size_t
-Array<TYPE>::FindIndexLinear(const TYPE& elm, size_t startIndex, size_t endIndex) const {
-	if (!Empty()) {
-        if (endIndex > Size()) 
-            endIndex = Size();
-        
-		const TYPE* bgn = begin();
-        for (size_t i = startIndex; i < endIndex; i++) {
-            if (elm == bgn[i]) {
-                return i;
-            }
-        }
-    }
-    // fallthrough: not found
-    return 0;
-}
+//template<class TYPE> size_t
+//Array<TYPE>::FindIndexLinear(const TYPE& elm, size_t startIndex, size_t endIndex) const {
+//	if (!Empty()) {
+//        if (endIndex > Size()) 
+//            endIndex = Size();
+//        
+//		const TYPE* bgn = begin();
+//        for (size_t i = startIndex; i < endIndex; i++) {
+//            if (elm == bgn[i]) {
+//                return i;
+//            }
+//        }
+//    }
+//    // fallthrough: not found
+//    return 0;
+//}
 
 template<class TYPE>
 inline void Array<TYPE>::insertBlank(const size_t& index, size_t count)

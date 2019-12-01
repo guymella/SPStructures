@@ -35,7 +35,7 @@ fips_begin_module(Structures)
     fips_files(
         Array.h
         #ArrayMap.h
-        #Slice.h
+        Slice.h
         #Buffer.h
         #HashSet.h
 		#KeyValuePair.h

@@ -10,59 +10,71 @@
     parameters or return values (just keep in mind that the referenced data is
     not owed, and the Slice may be affected by iterator-invalidation!)
 */
-#include "Core/Config.h"
-#include "Core/Assertion.h"
+//#include "Core/Config.h"
+//#include "Core/Assertion.h"
+#include "Structures/Interfaces/iArray.h"
 
-namespace Oryol {
+//namespace Oryol {
+template<typename TYPE> class Slice;
 
-template<typename TYPE> class Slice {
+template<typename TYPE> 
+class iSliceable {
+public:
+	virtual Slice<TYPE> MakeSlice(size_t sliceOffset = 0, size_t numSliceItems = std::numeric_limits<size_t>::max()) = 0;
+};
+
+
+template<typename TYPE> 
+class Slice : public iArray<TYPE>, public iSliceable<TYPE> {
 public:
     /// default constructor
     Slice();
     /// init from base pointer, start index and number of items
-    Slice(TYPE* base, int numBaseItems, int sliceOffset=0, int numSliceItems=EndOfRange);
+    Slice(TYPE* base, size_t numBaseItems, size_t sliceOffset=0, size_t numSliceItems= std::numeric_limits<size_t>::max());
     /// copy constructor
     Slice(const Slice& rhs);
     /// copy-assignment
     void operator=(const Slice& rhs);
     /// read/write access to indexed item
-    TYPE& operator[](int index);
+    TYPE& operator[](size_t index) override;
     /// read-only access to indexed item
-    const TYPE& operator[](int index) const;
+    const TYPE& operator[](size_t index) const override;
     /// create a new slice from this slice
-    class Slice MakeSlice(int sliceOffset=0, int numSliceItems=EndOfRange) const;
+    Slice<TYPE> MakeSlice(size_t sliceOffset=0, size_t numSliceItems= std::numeric_limits<size_t>::max()) override;
 
     /// reset the slice to its default state
     void Reset();
     /// return true if Slice is empty
-    bool Empty() const;
+    //bool Empty() const;
     /// get number of items
-    int Size() const;
+    size_t Size() const override;
     /// set new absolute size
-    void SetSize(int numSliceItems);
+    void SetSize(size_t numSliceItems);
     /// get the start index
-    int Offset() const;
+    size_t Offset() const;
     /// set new absolute offset
-    void SetOffset(int sliceOffset);
+    void SetOffset(size_t sliceOffset);
     /// move offset
-    void Move(int delta);
+    void Move(int64_t delta);
     /// if slice is 'to the right' of the gap, move offset to left by gapSize
-    void FillGap(int gapOffset, int gapSize);
+    void FillGap(int64_t gapOffset, int64_t gapSize);
+
+	//size_t FindIndexLinear(const TYPE& elm, size_t startIndex, size_t endIndex) const override;
 
     /// C++ begin
-    TYPE* begin();
+    TYPE* begin(const int64_t& offset = 0) override;
     /// C++ begin
-    const TYPE* begin() const;
+    const TYPE* begin(const int64_t& offset = 0) const override;
     /// C++ end
-    TYPE* end();
+    TYPE* end(const int64_t& offset = 0) override;
     /// C++ end
-    const TYPE* end() const;
+    const TYPE* end(const int64_t& offset = 0) const override;
 
 private:
     TYPE* basePtr = nullptr;
-    int baseSize = 0;
-    int offset = 0;
-    int num = 0;
+    size_t baseSize = 0;
+    size_t offset = 0;
+    size_t num = 0;
 };
 
 //------------------------------------------------------------------------------
@@ -73,13 +85,13 @@ Slice<TYPE>::Slice() {
 
 //------------------------------------------------------------------------------
 template<typename TYPE>
-Slice<TYPE>::Slice(TYPE* base, int numBaseItems, int sliceOffset, int sliceNumItems):
+Slice<TYPE>::Slice(TYPE* base, size_t numBaseItems, size_t sliceOffset, size_t sliceNumItems):
 basePtr(base),
 baseSize(numBaseItems),
 offset(sliceOffset),
-num((sliceNumItems==EndOfRange)?numBaseItems:sliceNumItems)
+num((sliceOffset+sliceNumItems> numBaseItems)?numBaseItems:sliceNumItems)
 {
-    o_assert_dbg(basePtr && (offset>=0) && (num>=0) && ((offset+num)<=baseSize));
+   // o_assert_dbg(basePtr && (offset>=0) && (num>=0) && ((offset+num)<=baseSize));
 }
 
 //------------------------------------------------------------------------------
@@ -100,23 +112,23 @@ Slice<TYPE>::operator=(const Slice& rhs) {
 
 //------------------------------------------------------------------------------
 template<typename TYPE> TYPE&
-Slice<TYPE>::operator[](int index) {
-    o_assert_dbg(this->basePtr && (index >= 0) && (index < this->num));
+Slice<TYPE>::operator[](size_t index) {
+    //o_assert_dbg(this->basePtr && (index >= 0) && (index < this->num));
     return this->basePtr[this->offset + index];
 }
 
 //------------------------------------------------------------------------------
 template<typename TYPE> const TYPE&
-Slice<TYPE>::operator[](int index) const {
-    o_assert_dbg(this->basePtr && (index >= 0) && (index < this->num));
+Slice<TYPE>::operator[](size_t index) const {
+    //o_assert_dbg(this->basePtr && (index >= 0) && (index < this->num));
     return this->basePtr[this->offset + index];
 }
 
 //------------------------------------------------------------------------------
 template<typename TYPE> Slice<TYPE>
-Slice<TYPE>::MakeSlice(int sliceOffset, int numSliceItems) const {
-    if (numSliceItems == EndOfRange) {
-        numSliceItems = this->num - sliceOffset;
+Slice<TYPE>::MakeSlice(size_t sliceOffset, size_t numSliceItems) {
+    if (sliceOffset+numSliceItems > Size()) {
+        numSliceItems = Size() - sliceOffset;
     }
     return Slice(this->basePtr, this->baseSize, this->offset+sliceOffset, numSliceItems);
 }
@@ -131,49 +143,49 @@ Slice<TYPE>::Reset() {
 }
 
 //------------------------------------------------------------------------------
-template<typename TYPE> bool
-Slice<TYPE>::Empty() const {
-    return 0 == this->num;
-}
+//template<typename TYPE> bool
+//Slice<TYPE>::Empty() const {
+//    return 0 == this->num;
+//}
 
 //------------------------------------------------------------------------------
-template<typename TYPE> int
+template<typename TYPE> size_t
 Slice<TYPE>::Size() const {
     return this->num;
 }
 
 //------------------------------------------------------------------------------
 template<typename TYPE> void
-Slice<TYPE>::SetSize(int numSliceItems) {
+Slice<TYPE>::SetSize(size_t numSliceItems) {
     o_assert_dbg((numSliceItems >= 0) && ((this->offset+numSliceItems) <= this->baseSize));
     this->num = numSliceItems;
 }
 
 //------------------------------------------------------------------------------
-template<typename TYPE> int
-Slice<TYPE>::Offset() const {
+template<typename TYPE> 
+size_t Slice<TYPE>::Offset() const {
     return this->offset;
 }
 
 //------------------------------------------------------------------------------
-template<typename TYPE> void
-Slice<TYPE>::SetOffset(int sliceOffset) {
-    o_assert_dbg((sliceOffset >= 0) && ((sliceOffset+this->num) <= this->baseSize));
+template<typename TYPE> 
+void Slice<TYPE>::SetOffset(size_t sliceOffset) {
+    //o_assert_dbg((sliceOffset >= 0) && ((sliceOffset+this->num) <= this->baseSize));
     this->offset = sliceOffset;
 }
 
 //------------------------------------------------------------------------------
-template<typename TYPE> void
-Slice<TYPE>::Move(int delta) {
-    o_assert_dbg((this->offset + delta) >= 0);
-    o_assert_dbg((this->offset + delta + this->num) <= this->baseSize);
+template<typename TYPE> 
+void Slice<TYPE>::Move(int64_t delta) {
+    //o_assert_dbg((this->offset + delta) >= 0);
+    //o_assert_dbg((this->offset + delta + this->num) <= this->baseSize);
     this->offset += delta;
 }
 
 //------------------------------------------------------------------------------
 template<typename TYPE> void
-Slice<TYPE>::FillGap(int gapOffset, int gapSize) {
-    o_assert((gapOffset >= 0) && (gapSize > 0) && ((gapOffset+gapSize) <= this->baseSize));
+Slice<TYPE>::FillGap(int64_t gapOffset, int64_t gapSize) {
+    //o_assert((gapOffset >= 0) && (gapSize > 0) && ((gapOffset+gapSize) <= this->baseSize));
     if (this->offset >= (gapOffset + gapSize)) {
         this->offset -= gapSize;
     }
@@ -181,9 +193,9 @@ Slice<TYPE>::FillGap(int gapOffset, int gapSize) {
 
 //------------------------------------------------------------------------------
 template<typename TYPE> TYPE*
-Slice<TYPE>::begin() {
+Slice<TYPE>::begin(const int64_t& poffset) {
     if (this->basePtr) {
-        return this->basePtr + this->offset;
+        return this->basePtr + this->offset + poffset;
     }
     else {
         return nullptr;
@@ -192,9 +204,9 @@ Slice<TYPE>::begin() {
 
 //------------------------------------------------------------------------------
 template<typename TYPE> const TYPE*
-Slice<TYPE>::begin() const {
+Slice<TYPE>::begin(const int64_t& poffset) const {
     if (this->basePtr) {
-        return this->basePtr + this->offset;
+        return this->basePtr + this->offset + poffset;
     }
     else {
         return nullptr;
@@ -203,9 +215,9 @@ Slice<TYPE>::begin() const {
 
 //------------------------------------------------------------------------------
 template<typename TYPE> TYPE*
-Slice<TYPE>::end() {
+Slice<TYPE>::end(const int64_t& poffset) {
     if (this->basePtr) {
-        return this->basePtr + this->offset + this->num;
+        return this->basePtr + this->offset + this->num + poffset;
     }
     else {
         return nullptr;
@@ -214,13 +226,13 @@ Slice<TYPE>::end() {
 
 //------------------------------------------------------------------------------
 template<typename TYPE> const TYPE*
-Slice<TYPE>::end() const {
+Slice<TYPE>::end(const int64_t& poffset) const {
     if (this->basePtr) {
-        return this->basePtr + this->offset + this->num;
+        return this->basePtr + this->offset + this->num + poffset;
     }
     else {
         return nullptr;
     }
 }
 
-} // namespace Oryol
+//} // namespace Oryol

@@ -15,7 +15,7 @@
 template <typename TYPE>
 class iArray : public iCountable, public iIndexable<TYPE>, public iCIterable<TYPE>, public iSearchable<TYPE> {
 public:
-		
+	virtual size_t FindIndexLinear(const TYPE& elm, size_t startIndex = 0, size_t endIndex = std::numeric_limits<size_t>::max()) const override;
 
 				
 };
@@ -27,3 +27,20 @@ public:
 
 
 };
+
+template<class TYPE> 
+size_t iArray<TYPE>::FindIndexLinear(const TYPE& elm, size_t startIndex, size_t endIndex) const {
+	if (!Empty()) {
+		if (endIndex > Size())
+			endIndex = Size();
+
+		const TYPE* bgn = begin();
+		for (size_t i = startIndex; i < endIndex; i++) {
+			if (elm == bgn[i]) {
+				return i;
+			}
+		}
+	}
+	// fallthrough: not found
+	return 0;
+}
