@@ -64,7 +64,7 @@ fips_begin_module(Structures)
 
 fips_end_module()
 
-fips_begin_app(test cmdline)
+fips_begin_app(TestApp cmdline)
     fips_vs_warning_level(3)	
-    fips_files(Test.cc)
+    fips_files(TestApp.cc)
 fips_end_app()
