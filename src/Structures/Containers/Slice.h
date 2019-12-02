@@ -35,6 +35,8 @@ public:
     Slice(const Slice& rhs);
     /// copy-assignment
     void operator=(const Slice& rhs);
+	/// copy-assignment
+	bool operator==(const Slice& rhs);
     /// read/write access to indexed item
     TYPE& operator[](size_t index) override;
     /// read-only access to indexed item
@@ -58,6 +60,15 @@ public:
     void Move(int64_t delta);
     /// if slice is 'to the right' of the gap, move offset to left by gapSize
     void FillGap(int64_t gapOffset, int64_t gapSize);
+
+	Slice<TYPE>& operator++();
+	Slice<TYPE>  operator++(int);
+	Slice<TYPE>&  operator--();
+	Slice<TYPE>  operator--(int);
+	Slice<TYPE>& operator+=(int64_t);
+	Slice<TYPE>&  operator-=(int64_t);
+	Slice<TYPE> operator+(int64_t);
+	Slice<TYPE> operator-(int64_t);
 
 	//size_t FindIndexLinear(const TYPE& elm, size_t startIndex, size_t endIndex) const override;
 
@@ -108,6 +119,12 @@ Slice<TYPE>::operator=(const Slice& rhs) {
     this->baseSize = rhs.baseSize;
     this->offset = rhs.offset;
     this->num = rhs.num;
+}
+
+template<typename TYPE>
+inline bool Slice<TYPE>::operator==(const Slice& rhs)
+{
+	return (basePtr == rhs.basePtr && baseSize == rhs.baseSize && num == rhs.num && offset == rhs.offset);
 }
 
 //------------------------------------------------------------------------------
@@ -189,6 +206,66 @@ Slice<TYPE>::FillGap(int64_t gapOffset, int64_t gapSize) {
     if (this->offset >= (gapOffset + gapSize)) {
         this->offset -= gapSize;
     }
+}
+
+template<typename TYPE>
+inline Slice<TYPE>& Slice<TYPE>::operator++()
+{
+	Move(1);
+	return *this;
+}
+
+template<typename TYPE>
+inline Slice<TYPE> Slice<TYPE>::operator++(int)
+{
+	Slice<TYPE> t = *this;
+	Move(1);
+	return t;
+}
+
+template<typename TYPE>
+inline Slice<TYPE>& Slice<TYPE>::operator--()
+{
+	Move(-1);
+	return *this;
+}
+
+template<typename TYPE>
+inline Slice<TYPE> Slice<TYPE>::operator--(int)
+{
+	Slice<TYPE> t = *this;
+	Move(-1);
+	return t;
+}
+
+template<typename TYPE>
+inline Slice<TYPE>& Slice<TYPE>::operator+=(int64_t o)
+{
+	Move(o);
+	return *this;
+}
+
+template<typename TYPE>
+inline Slice<TYPE>& Slice<TYPE>::operator-=(int64_t o)
+{
+	Move(-o);
+	return *this;
+}
+
+template<typename TYPE>
+inline Slice<TYPE> Slice<TYPE>::operator+(int64_t o)
+{
+	Slice<TYPE> t = *this;
+	t.Move(o);
+	return t;
+}
+
+template<typename TYPE>
+inline Slice<TYPE> Slice<TYPE>::operator-(int64_t o)
+{
+	Slice<TYPE> t = *this;
+	t.Move(-o);
+	return t;
 }
 
 //------------------------------------------------------------------------------

@@ -451,13 +451,32 @@ bool testArray() {
 	CHECK(slice[0] == 1);
 	CHECK(slice[9] == 10);
 
+	//test Slice offset operators
+	slice = array7.MakeSlice(2,2);
+	CHECK(slice.Size() == 2);
+	CHECK(slice.Offset() == 2);
+	CHECK(slice[0] == 3);
+	CHECK(slice[1] == 123);
+	Slice<int> sl1 = slice++;
+	CHECK(sl1[0] == 3);
+	CHECK(sl1[1] == 123);
+	CHECK(slice[0] == 123);
+	CHECK(slice[1] == 5);
+	Slice<int> sl2 = ++slice;
+	CHECK(sl2[0] == 5);
+	CHECK(sl2[1] == 6);
+	CHECK(sl1 +2 == sl2);
+	sl1 += 2;
+	CHECK(sl1 == sl2);
+	
+
 	// fixed capacity
-	Array<int> array8;
-	array8.SetFixedCapacity(128);
-	CHECK(array8.Size() == 0);
-	CHECK(array8.Capacity() == 128);
-	CHECK(array8.GetMinGrow() == 0);
-	CHECK(array8.GetMaxGrow() == 0);
+	//Array<int> array8;
+	//array8.SetFixedCapacity(128);
+	//CHECK(array8.Size() == 0);
+	//CHECK(array8.Capacity() == 128);
+	//CHECK(array8.GetMinGrow() == 0);
+	//CHECK(array8.GetMaxGrow() == 0);
 
 	return true;
 }
