@@ -81,9 +81,9 @@ public:
 	size_t SpareBack() const override;
     
     /// read/write access an existing element
-    TYPE& operator[](size_t index) override;
+    //TYPE& operator[](size_t index) override;
     /// read-only access to existing element
-    const TYPE& operator[](size_t index) const override;
+    //const TYPE& operator[](size_t index) const override;
     /// read/write access to first element (must exists)
     TYPE& Front() override;
     /// read-only access to first element (must exist)
@@ -297,19 +297,19 @@ inline size_t Array<TYPE>::SpareBack() const
 	return Capacity()-Size()-startElem;
 }
 
-//------------------------------------------------------------------------------
-template<class TYPE> TYPE&
-Array<TYPE>::operator[](size_t index) {
-	//TODO:: handle out of range
-	return begin()[index];
-}
-
-//------------------------------------------------------------------------------
-template<class TYPE> const TYPE&
-Array<TYPE>::operator[](size_t index) const {
-	//TODO:: handle out of range
-    return begin()[index];
-}
+////------------------------------------------------------------------------------
+//template<class TYPE> TYPE&
+//Array<TYPE>::operator[](size_t index) {
+//	//TODO:: handle out of range
+//	return begin()[index];
+//}
+//
+////------------------------------------------------------------------------------
+//template<class TYPE> const TYPE&
+//Array<TYPE>::operator[](size_t index) const {
+//	//TODO:: handle out of range
+//    return begin()[index];
+//}
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE&

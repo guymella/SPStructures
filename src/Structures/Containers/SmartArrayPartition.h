@@ -1,316 +1,211 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Slice
-    @ingroup Core
-    @brief a reference to an array-like range of non-owned items
+	@class Oryol::Slice
+	@ingroup Core
+	@brief a reference to an array-like range of non-owned items
 
-    An Slice<TYPE> is a generic reference to a number of array items
-    which are owned by someone else. They are especially useful as function
-    parameters or return values (just keep in mind that the referenced data is
-    not owed, and the Slice may be affected by iterator-invalidation!)
+	An Slice<TYPE> is a generic reference to a number of array items
+	which are owned by someone else. They are especially useful as function
+	parameters or return values (just keep in mind that the referenced data is
+	not owed, and the Slice may be affected by iterator-invalidation!)
 */
 //#include "Core/Config.h"
 //#include "Core/Assertion.h"
 #include "Structures/Interfaces/iArray.h"
-#include "Structures/Containers/Slice.h"
 
 //namespace Oryol {
-template<typename TYPE> class Slice;
+template<typename TYPE> class SmartSlice;
 
-template<typename TYPE> 
+template<typename TYPE>
 class iSmartSliceable {
 public:
 	virtual SmartSlice<TYPE> MakeSmartSlice(size_t sliceOffset = 0, size_t numSliceItems = std::numeric_limits<size_t>::max()) = 0;
 };
 
-
-template<typename TYPE> 
-class SmartSlice : public iDArray<TYPE>, public iSmartSliceable<TYPE> ,public iSliceable<TYPE> {
+template<typename TYPE>
+class iSmartArrayPartition : public iDArray<TYPE>, public iSmartSliceable<TYPE> {
 public:
-    /// default constructor
-	SmartSlice();
-    /// init from base pointer, start index and number of items
-	SmartSlice(TYPE* base, size_t numBaseItems, size_t sliceOffset=0, size_t numSliceItems= std::numeric_limits<size_t>::max());
-    /// copy constructor
-	SmartSlice(const SmartSlice& rhs);
-    /// copy-assignment
-    void operator=(const Slice& rhs);
-	/// copy-assignment
-	bool operator==(const Slice& rhs);
-    /// read/write access to indexed item
-    TYPE& operator[](size_t index) override;
-    /// read-only access to indexed item
-    const TYPE& operator[](size_t index) const override;
-    /// create a new slice from this slice
-    Slice<TYPE> MakeSlice(size_t sliceOffset=0, size_t numSliceItems= std::numeric_limits<size_t>::max()) override;
+	/// read/write access to indexed item
+	TYPE& operator[](size_t index) override;
+	/// read-only access to indexed item
+	const TYPE& operator[](size_t index) const override;
+	/// create a new slice from this slice
 	SmartSlice<TYPE> MakeSmartSlice(size_t sliceOffset = 0, size_t numSliceItems = std::numeric_limits<size_t>::max()) override;
-    /// reset the slice to its default state
-    void Reset();
-    /// return true if Slice is empty
-    //bool Empty() const;
-    /// get number of items
-    size_t Size() const override;
-    /// set new absolute size
-    void SetSize(size_t numSliceItems);
-    /// get the start index
-    size_t Offset() const;
-    /// set new absolute offset
-    void SetOffset(size_t sliceOffset);
-    /// move offset
-    void Move(int64_t delta);
-    /// if slice is 'to the right' of the gap, move offset to left by gapSize
-    void FillGap(int64_t gapOffset, int64_t gapSize);
-
-	Slice<TYPE>& operator++();
-	Slice<TYPE>  operator++(int);
-	Slice<TYPE>&  operator--();
-	Slice<TYPE>  operator--(int);
-	Slice<TYPE>& operator+=(int64_t);
-	Slice<TYPE>&  operator-=(int64_t);
-	Slice<TYPE> operator+(int64_t);
-	Slice<TYPE> operator-(int64_t);
-
+	/// get number of items
+	//size_t Size() const overrid;
+	/// get the start index
+	virtual size_t Offset() const = 0;
+	//Get the base pointer
+	virtual iDArray* BasePointer() = 0;
+	virtual const iDArray* BasePointer() const = 0;
 	//size_t FindIndexLinear(const TYPE& elm, size_t startIndex, size_t endIndex) const override;
 
-    /// C++ begin
-    TYPE* begin(const int64_t& offset = 0) override;
-    /// C++ begin
-    const TYPE* begin(const int64_t& offset = 0) const override;
-    /// C++ end
-    TYPE* end(const int64_t& offset = 0) override;
-    /// C++ end
-    const TYPE* end(const int64_t& offset = 0) const override;
-
-private:
-    TYPE* basePtr = nullptr;
-    size_t baseSize = 0;
-    size_t offset = 0;
-    size_t num = 0;
+	/// C++ begin
+	TYPE* begin(const int64_t& offset = 0) override;
+	/// C++ begin
+	const TYPE* begin(const int64_t& offset = 0) const override;
+	/// C++ end
+	TYPE* end(const int64_t& offset = 0) override;
+	/// C++ end
+	const TYPE* end(const int64_t& offset = 0) const override;
 };
 
-//------------------------------------------------------------------------------
 template<typename TYPE>
-Slice<TYPE>::Slice() {
-    // empty
-}
+class ArrayPartition : public iArrayPartition<TYPE> {
+public:
+	/// default constructor
+	ArrayPartition();
+	/// init from base pointer, start index and number of items
+	ArrayPartition(TYPE* base, size_t numBaseItems, size_t sliceOffset = 0, size_t numSliceItems = std::numeric_limits<size_t>::max());
+	/// copy constructor
+	ArrayPartition(const ArrayPartition<TYPE>& rhs);
+	/// Equality
+	bool operator==(const ArrayPartition<TYPE>& rhs);
+	/// copy-assignment
+	void operator=(const ArrayPartition<TYPE>& rhs);
+	/// get number of items
+	size_t Size() const override;
+	/// get the start index
+	virtual size_t Offset() const override;
+	//Get the base pointer
+	virtual TYPE* BasePointer() override;
+	virtual const TYPE* BasePointer() const override;
 
-//------------------------------------------------------------------------------
+protected:
+	iDArray* basePtr = nullptr;
+	size_t offset = 0;
+	size_t num = 0;
+};
+
+
+
+
 template<typename TYPE>
-Slice<TYPE>::Slice(TYPE* base, size_t numBaseItems, size_t sliceOffset, size_t sliceNumItems):
-basePtr(base),
-baseSize(numBaseItems),
-offset(sliceOffset),
-num((sliceOffset+sliceNumItems> numBaseItems)?numBaseItems:sliceNumItems)
+inline ArrayPartition<TYPE>::ArrayPartition()
 {
-   // o_assert_dbg(basePtr && (offset>=0) && (num>=0) && ((offset+num)<=baseSize));
 }
 
 //------------------------------------------------------------------------------
 template<typename TYPE>
-Slice<TYPE>::Slice(const Slice& rhs):
-basePtr(rhs.basePtr), baseSize(rhs.baseSize), offset(rhs.offset), num(rhs.num) {
-    // empty
+ArrayPartition<TYPE>::ArrayPartition(TYPE* base, size_t numBaseItems, size_t sliceOffset, size_t sliceNumItems) :
+	basePtr(base),
+	offset(sliceOffset),
+	num((sliceOffset + sliceNumItems > numBaseItems) ? numBaseItems : sliceNumItems)
+{
+	// o_assert_dbg(basePtr && (offset>=0) && (num>=0) && ((offset+num)<=baseSize));
+}
+
+template<typename TYPE>
+inline ArrayPartition<TYPE>::ArrayPartition(const ArrayPartition<TYPE>& rhs)
+	: basePtr(rhs.basePtr), offset(rhs.offset), num(rhs.num)
+{
 }
 
 //------------------------------------------------------------------------------
 template<typename TYPE> void
-Slice<TYPE>::operator=(const Slice& rhs) {
-    this->basePtr = rhs.basePtr;
-    this->baseSize = rhs.baseSize;
-    this->offset = rhs.offset;
-    this->num = rhs.num;
+ArrayPartition<TYPE>::operator=(const ArrayPartition<TYPE>& rhs) {
+	this->basePtr = rhs.basePtr;
+	this->baseSize = rhs.baseSize;
+	this->offset = rhs.offset;
+	this->num = rhs.num;
 }
 
 template<typename TYPE>
-inline bool Slice<TYPE>::operator==(const Slice& rhs)
+inline bool ArrayPartition<TYPE>::operator==(const ArrayPartition<TYPE>& rhs)
 {
 	return (basePtr == rhs.basePtr && baseSize == rhs.baseSize && num == rhs.num && offset == rhs.offset);
 }
 
 //------------------------------------------------------------------------------
 template<typename TYPE> TYPE&
-Slice<TYPE>::operator[](size_t index) {
-    //o_assert_dbg(this->basePtr && (index >= 0) && (index < this->num));
-    return this->basePtr[this->offset + index];
+iSmartArrayPartition<TYPE>::operator[](size_t index) {
+	//o_assert_dbg(this->basePtr && (index >= 0) && (index < this->num));
+	return begin()[index];
 }
 
 //------------------------------------------------------------------------------
 template<typename TYPE> const TYPE&
-Slice<TYPE>::operator[](size_t index) const {
-    //o_assert_dbg(this->basePtr && (index >= 0) && (index < this->num));
-    return this->basePtr[this->offset + index];
+iSmartArrayPartition<TYPE>::operator[](size_t index) const {
+	//o_assert_dbg(this->basePtr && (index >= 0) && (index < this->num));
+	return begin()[index];
 }
 
 //------------------------------------------------------------------------------
-template<typename TYPE> Slice<TYPE>
-Slice<TYPE>::MakeSlice(size_t sliceOffset, size_t numSliceItems) {
-    if (sliceOffset+numSliceItems > Size()) {
-        numSliceItems = Size() - sliceOffset;
-    }
-    return Slice(this->basePtr, this->baseSize, this->offset+sliceOffset, numSliceItems);
-}
+template<typename TYPE> SmartSlice<TYPE>
+	iSmartArrayPartition<TYPE>::MakeSmartSlice(size_t sliceOffset, size_t numSliceItems) {
+		if (sliceOffset + numSliceItems > Size()) {
+			numSliceItems = Size() - sliceOffset;
+		}
+		return Slice<TYPE>(BasePointer(), Size(), Offset() + sliceOffset, numSliceItems);
+	}
 
-//------------------------------------------------------------------------------
-template<typename TYPE> void
-Slice<TYPE>::Reset() {
-    this->basePtr = nullptr;
-    this->baseSize = 0;
-    this->offset = 0;
-    this->num = 0;
-}
+	//------------------------------------------------------------------------------
+	template<typename TYPE> size_t
+		ArrayPartition<TYPE>::Size() const {
+		return this->num;
+	}
 
-//------------------------------------------------------------------------------
-//template<typename TYPE> bool
-//Slice<TYPE>::Empty() const {
-//    return 0 == this->num;
-//}
+	//------------------------------------------------------------------------------
+	template<typename TYPE>
+	size_t ArrayPartition<TYPE>::Offset() const {
+		return this->offset;
+	}
 
-//------------------------------------------------------------------------------
-template<typename TYPE> size_t
-Slice<TYPE>::Size() const {
-    return this->num;
-}
+	template<typename TYPE>
+	inline TYPE* ArrayPartition<TYPE>::BasePointer()
+	{
+		return basePtr;
+	}
 
-//------------------------------------------------------------------------------
-template<typename TYPE> void
-Slice<TYPE>::SetSize(size_t numSliceItems) {
-    o_assert_dbg((numSliceItems >= 0) && ((this->offset+numSliceItems) <= this->baseSize));
-    this->num = numSliceItems;
-}
+	template<typename TYPE>
+	inline const TYPE* ArrayPartition<TYPE>::BasePointer() const
+	{
+		return basePtr;
+	}
 
-//------------------------------------------------------------------------------
-template<typename TYPE> 
-size_t SmartSlice<TYPE>::Offset() const {
-    return this->offset;
-}
+	//------------------------------------------------------------------------------
+	template<typename TYPE> TYPE*
+		iSmartArrayPartition<TYPE>::begin(const int64_t& poffset) {
+		if (BasePointer()) {
+			return BasePointer() + Offset() + poffset;
+		}
+		else {
+			return nullptr;
+		}
+	}
 
-//------------------------------------------------------------------------------
-template<typename TYPE> 
-void Slice<TYPE>::SetOffset(size_t sliceOffset) {
-    //o_assert_dbg((sliceOffset >= 0) && ((sliceOffset+this->num) <= this->baseSize));
-    this->offset = sliceOffset;
-}
+	//------------------------------------------------------------------------------
+	template<typename TYPE> const TYPE*
+		iSmartArrayPartition<TYPE>::begin(const int64_t& poffset) const {
+		if (BasePointer()) {
+			return BasePointer() + Offset() + poffset;
+		}
+		else {
+			return nullptr;
+		}
+	}
 
-//------------------------------------------------------------------------------
-template<typename TYPE> 
-void Slice<TYPE>::Move(int64_t delta) {
-    //o_assert_dbg((this->offset + delta) >= 0);
-    //o_assert_dbg((this->offset + delta + this->num) <= this->baseSize);
-    this->offset += delta;
-}
+	//------------------------------------------------------------------------------
+	template<typename TYPE> TYPE*
+		iSmartArrayPartition<TYPE>::end(const int64_t& poffset) {
+		if (BasePointer()) {
+			return begin(poffset) + Size();
+		}
+		else {
+			return nullptr;
+		}
+	}
 
-//------------------------------------------------------------------------------
-template<typename TYPE> void
-Slice<TYPE>::FillGap(int64_t gapOffset, int64_t gapSize) {
-    //o_assert((gapOffset >= 0) && (gapSize > 0) && ((gapOffset+gapSize) <= this->baseSize));
-    if (this->offset >= (gapOffset + gapSize)) {
-        this->offset -= gapSize;
-    }
-}
+	//------------------------------------------------------------------------------
+	template<typename TYPE> const TYPE*
+		iSmartArrayPartition<TYPE>::end(const int64_t& poffset) const {
+		if (BasePointer()) {
+			return begin(poffset) + Size();
+		}
+		else {
+			return nullptr;
+		}
+	}
 
-template<typename TYPE>
-inline Slice<TYPE>& Slice<TYPE>::operator++()
-{
-	Move(1);
-	return *this;
-}
-
-template<typename TYPE>
-inline Slice<TYPE> Slice<TYPE>::operator++(int)
-{
-	Slice<TYPE> t = *this;
-	Move(1);
-	return t;
-}
-
-template<typename TYPE>
-inline Slice<TYPE>& Slice<TYPE>::operator--()
-{
-	Move(-1);
-	return *this;
-}
-
-template<typename TYPE>
-inline Slice<TYPE> Slice<TYPE>::operator--(int)
-{
-	Slice<TYPE> t = *this;
-	Move(-1);
-	return t;
-}
-
-template<typename TYPE>
-inline Slice<TYPE>& Slice<TYPE>::operator+=(int64_t o)
-{
-	Move(o);
-	return *this;
-}
-
-template<typename TYPE>
-inline Slice<TYPE>& Slice<TYPE>::operator-=(int64_t o)
-{
-	Move(-o);
-	return *this;
-}
-
-template<typename TYPE>
-inline Slice<TYPE> Slice<TYPE>::operator+(int64_t o)
-{
-	Slice<TYPE> t = *this;
-	t.Move(o);
-	return t;
-}
-
-template<typename TYPE>
-inline Slice<TYPE> Slice<TYPE>::operator-(int64_t o)
-{
-	Slice<TYPE> t = *this;
-	t.Move(-o);
-	return t;
-}
-
-//------------------------------------------------------------------------------
-template<typename TYPE> TYPE*
-Slice<TYPE>::begin(const int64_t& poffset) {
-    if (this->basePtr) {
-        return this->basePtr + this->offset + poffset;
-    }
-    else {
-        return nullptr;
-    }
-}
-
-//------------------------------------------------------------------------------
-template<typename TYPE> const TYPE*
-Slice<TYPE>::begin(const int64_t& poffset) const {
-    if (this->basePtr) {
-        return this->basePtr + this->offset + poffset;
-    }
-    else {
-        return nullptr;
-    }
-}
-
-//------------------------------------------------------------------------------
-template<typename TYPE> TYPE*
-Slice<TYPE>::end(const int64_t& poffset) {
-    if (this->basePtr) {
-        return this->basePtr + this->offset + this->num + poffset;
-    }
-    else {
-        return nullptr;
-    }
-}
-
-//------------------------------------------------------------------------------
-template<typename TYPE> const TYPE*
-Slice<TYPE>::end(const int64_t& poffset) const {
-    if (this->basePtr) {
-        return this->basePtr + this->offset + this->num + poffset;
-    }
-    else {
-        return nullptr;
-    }
-}
-
-//} // namespace Oryol
+	//} // namespace Oryol

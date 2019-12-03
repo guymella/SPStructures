@@ -27,9 +27,9 @@ template<typename TYPE>
 class iArrayPartition : public iArray<TYPE>, public iSliceable<TYPE> {	
 public:
 	/// read/write access to indexed item
-	TYPE& operator[](size_t index) override;
+	//TYPE& operator[](size_t index) override;
 	/// read-only access to indexed item
-	const TYPE& operator[](size_t index) const override;
+	//const TYPE& operator[](size_t index) const override;
 	/// create a new slice from this slice
 	Slice<TYPE> MakeSlice(size_t sliceOffset = 0, size_t numSliceItems = std::numeric_limits<size_t>::max()) override;
 	/// get number of items
@@ -118,19 +118,19 @@ inline bool ArrayPartition<TYPE>::operator==(const ArrayPartition<TYPE>& rhs)
 	return (basePtr == rhs.basePtr && baseSize == rhs.baseSize && num == rhs.num && offset == rhs.offset);
 }
 
-//------------------------------------------------------------------------------
-template<typename TYPE> TYPE&
-iArrayPartition<TYPE>::operator[](size_t index) {
-    //o_assert_dbg(this->basePtr && (index >= 0) && (index < this->num));
-    return begin()[index];
-}
-
-//------------------------------------------------------------------------------
-template<typename TYPE> const TYPE&
-iArrayPartition<TYPE>::operator[](size_t index) const {
-    //o_assert_dbg(this->basePtr && (index >= 0) && (index < this->num));
-    return begin()[index];
-}
+////------------------------------------------------------------------------------
+//template<typename TYPE> TYPE&
+//iArrayPartition<TYPE>::operator[](size_t index) {
+//    //o_assert_dbg(this->basePtr && (index >= 0) && (index < this->num));
+//    return begin()[index];
+//}
+//
+////------------------------------------------------------------------------------
+//template<typename TYPE> const TYPE&
+//iArrayPartition<TYPE>::operator[](size_t index) const {
+//    //o_assert_dbg(this->basePtr && (index >= 0) && (index < this->num));
+//    return begin()[index];
+//}
 
 //------------------------------------------------------------------------------
 template<typename TYPE> Slice<TYPE>
