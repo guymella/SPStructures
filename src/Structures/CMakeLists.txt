@@ -67,4 +67,10 @@ fips_end_module()
 fips_begin_app(TestApp cmdline)
     fips_vs_warning_level(3)	
     fips_files(TestApp.cc)
+    fips_dir(Unittests)
+    fips_files(
+        ArrayTest.h
+	BlockTest.h
+	TableTest.h
+    )
 fips_end_app()

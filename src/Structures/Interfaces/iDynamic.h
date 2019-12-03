@@ -6,6 +6,8 @@
     @brief interface for linear structures with dynamic size, and preallocated free space
 */
 
+#include "Structures/Types.h"
+
 struct CopyRange {
 	size_t dstOffset;
 	void* src;
