@@ -12,7 +12,7 @@
 int main(void) {
 
 	TestBlock();
-	//TestTable();
+	TestTable();
 	testArray();
 
 	return 0;

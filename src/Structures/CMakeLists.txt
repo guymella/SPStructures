@@ -7,7 +7,15 @@ fips_begin_module(Structures)
 	
     fips_dir(Containers)
     fips_files(
-        Allocator.h Block.h Table.h Partition.h
+        Allocator.h 
+		Block.h 
+		Table.h 
+		Partition.h
+		Array.h
+		ArrayPartition.h
+		Slice.h
+		SmartArrayPartition.h
+		SmartSlice.h
     )
 
     fips_dir(interfaces)
@@ -29,13 +37,12 @@ fips_begin_module(Structures)
     fips_files(
         VarInt.h   
 		TypeDescr.h
+		KeyString.h
     )
 	
-	fips_dir(Containers)
-    fips_files(
-        Array.h
+	#fips_dir(Containers)
+    #fips_files(
         #ArrayMap.h
-        Slice.h
         #Buffer.h
         #HashSet.h
 		#KeyValuePair.h
@@ -45,7 +52,7 @@ fips_begin_module(Structures)
         #StaticArray.h
         #elementBuffer.h
         #InlineArray.h
-    )
+    #)
 	
     #fips_dir(Memory)
     #fips_files(Memory.cc Memory.h)

@@ -154,7 +154,6 @@ bool testArray() {
 	CHECK(array2[1] == 7);
 	CHECK(array2[2] == 1);
 	CHECK(array2[3] == 8);
-	CHECK(array2[4] == 2);
 	CHECK(array2[5] == 3);
 	CHECK(array2[6] == 6);
 	array2.Erase(6);
