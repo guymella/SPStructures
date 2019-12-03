@@ -77,7 +77,9 @@ fips_begin_app(TestApp cmdline)
     fips_dir(Unittests)
     fips_files(
         ArrayTest.h
-	BlockTest.h
-	TableTest.h
+		BlockTest.h
+		TableTest.h
+		SliceTest.h
+		SmartSliceTest.h
     )
 fips_end_app()

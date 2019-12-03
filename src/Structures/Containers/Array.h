@@ -34,6 +34,7 @@
 //#include "Core/Config.h"
 //#include "Core/Containers/elementBuffer.h"
 #include "Structures/Containers/Slice.h"
+#include "Structures/Containers/SmartSlice.h"
 #include "Structures/Interfaces/iArray.h"
 #include "Structures/Containers/Block.h"
 
@@ -41,7 +42,8 @@
 
 //namespace Structures {
 
-template<class TYPE> class Array : public iDArray<TYPE>, public iSliceable<TYPE>{
+template<class TYPE> class Array : public iDDArray<TYPE>, public iSliceable<TYPE>//, public iSmartSliceable<TYPE> 
+{
 public:
     /// default constructor
     Array();
@@ -71,7 +73,7 @@ public:
     size_t Size() const override;
     /// return true if empty
     //bool Empty() const override;
-	using iDArray<TYPE>::Empty;
+	//using iDArray<TYPE>::Empty;
     /// get capacity of array
     size_t Capacity() const override;
     /// get number of free slots at back of array
@@ -85,15 +87,16 @@ public:
     /// read-only access to existing element
     //const TYPE& operator[](size_t index) const override;
     /// read/write access to first element (must exists)
-    TYPE& Front() override;
+    //TYPE& Front() override;
     /// read-only access to first element (must exist)
-    const TYPE& Front() const override;
+    //const TYPE& Front() const override;
     /// read/write access to last element (must exist)
-    TYPE& Back() override;
+    //TYPE& Back() override;
     /// read-only access to last element (must exist)
-    const TYPE& Back() const override;
+    //const TYPE& Back() const override;
     /// get a slice into the array (beware of iterator-invalidation!)
     Slice<TYPE> MakeSlice(size_t offset=0, size_t numItems= std::numeric_limits<size_t>::max()) override;
+	//virtual SmartSlice<TYPE> MakeSmartSlice(size_t sliceOffset = 0, size_t numSliceItems = std::numeric_limits<size_t>::max()) override;
 
     /// increase capacity to hold at least numElements more elements
 	void ReserveFront(const size_t& numElements) override;
@@ -148,7 +151,7 @@ public:
     /// find element index with slow linear search, return InvalidIndex if not found
 	//size_t FindIndexLinear(const TYPE& elm, size_t startIndex=0, size_t endIndex=std::numeric_limits<size_t>::max()) const;
     
-	void insertBlank(const size_t& index, size_t count = 1);
+	void insertBlank(const size_t& index, size_t count = 1) override;
 
     /// C++ conform begin
     TYPE* begin(const int64_t& offset = 0) override;
@@ -311,35 +314,35 @@ inline size_t Array<TYPE>::SpareBack() const
 //    return begin()[index];
 //}
 
-//------------------------------------------------------------------------------
-template<class TYPE> TYPE&
-Array<TYPE>::Front() {
-	//TODO:: handle empty
-    return *begin();
-}
-
-//------------------------------------------------------------------------------
-template<class TYPE> const TYPE&
-Array<TYPE>::Front() const {
-	//TODO:: handle empty
-    return *begin();
-}
-
-//------------------------------------------------------------------------------
-template<class TYPE> TYPE&
-Array<TYPE>::Back() {
-	//TODO:: handle empty
-	TYPE* e = end();
-	return *(--e);
-}
-
-//------------------------------------------------------------------------------
-template<class TYPE> const TYPE&
-Array<TYPE>::Back() const {
-	//TODO:: handle empty
-	const TYPE* e = end();
-    return *(--e);
-}
+////------------------------------------------------------------------------------
+//template<class TYPE> TYPE&
+//Array<TYPE>::Front() {
+//	//TODO:: handle empty
+//    return *begin();
+//}
+//
+////------------------------------------------------------------------------------
+//template<class TYPE> const TYPE&
+//Array<TYPE>::Front() const {
+//	//TODO:: handle empty
+//    return *begin();
+//}
+//
+////------------------------------------------------------------------------------
+//template<class TYPE> TYPE&
+//Array<TYPE>::Back() {
+//	//TODO:: handle empty
+//	TYPE* e = end();
+//	return *(--e);
+//}
+//
+////------------------------------------------------------------------------------
+//template<class TYPE> const TYPE&
+//Array<TYPE>::Back() const {
+//	//TODO:: handle empty
+//	const TYPE* e = end();
+//    return *(--e);
+//}
 
 //------------------------------------------------------------------------------
 template<class TYPE> Slice<TYPE>
@@ -349,6 +352,12 @@ Array<TYPE>::MakeSlice(size_t offset, size_t numItems) {
     }
     return Slice<TYPE>(begin(), Size(), offset, numItems);
 }
+
+//template<class TYPE>
+//inline SmartSlice<TYPE> Array<TYPE>::MakeSmartSlice(size_t sliceOffset, size_t numSliceItems)
+//{
+//	return SmartSlice<TYPE>(this,sliceOffset,numSliceItems);
+//}
 
 template<class TYPE>
 inline void Array<TYPE>::ReserveFront(const size_t& numElements)

@@ -399,6 +399,21 @@ bool testArray() {
 	CHECK(sl1 == sl2);
 
 
+
+	// MakeSlice
+	/*Array<int> array8 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+	SmartSlice<int> smartslice = array8.MakeSmartSlice(3, 4);
+	CHECK(smartslice.Size() == 4);
+	CHECK(smartslice.Offset() == 3);
+	CHECK(smartslice[0] == 4);
+	CHECK(smartslice[1] == 5);
+	CHECK(smartslice[2] == 6);
+	CHECK(smartslice[3] == 7);
+	CHECK(smartslice.begin() == &array8[3]);
+	CHECK(smartslice.end() == &array8[7]);
+	smartslice[0] = 123;
+	CHECK(array8[3] == 123);*/
+
 	// fixed capacity
 	//Array<int> array8;
 	//array8.SetFixedCapacity(128);

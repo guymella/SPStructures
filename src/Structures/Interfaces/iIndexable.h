@@ -20,6 +20,7 @@ public:
 	virtual void Insert(size_t index, const TYPE& elm) = 0;
 	/// move-insert element at index, keep array order
 	virtual void Insert(size_t index, TYPE&& elm) = 0;
+	virtual void insertBlank(const size_t& index, size_t count = 1) = 0;
 
 	/// pop the last element
 	virtual TYPE PopBack() = 0;

@@ -23,11 +23,24 @@ public:
 };
 
 template <typename TYPE>
-class iDArray : public iArray<TYPE>, public iDynamic,public iEditable<TYPE>, public iQueueDouble<TYPE> {
+class iDArray : public iArray<TYPE>, public iEditable<TYPE>, public iQueueDouble<TYPE> {
 public:
 
+	virtual TYPE& Front() override;
+	/// read-only access to first element (must exist)
+	virtual const TYPE& Front() const override;
+	/// read/write access to last element (must exist)
+	virtual TYPE& Back() override;
+	/// read-only access to last element (must exist)
+	virtual const TYPE& Back() const override;
 
+};
 
+template <typename TYPE>
+class iDDArray : public iDArray<TYPE>, public iDynamic {
+public:
+
+	
 };
 
 template<class TYPE> 
@@ -59,4 +72,34 @@ template<typename TYPE> const TYPE&
 iArray<TYPE>::operator[](size_t index) const {
 	//o_assert_dbg(this->basePtr && (index >= 0) && (index < this->num));
 	return begin()[index];
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> TYPE&
+iDArray<TYPE>::Front() {
+	//TODO:: handle empty
+	return *begin();
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> const TYPE&
+iDArray<TYPE>::Front() const {
+	//TODO:: handle empty
+	return *begin();
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> TYPE&
+iDArray<TYPE>::Back() {
+	//TODO:: handle empty
+	TYPE* e = end();
+	return *(--e);
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> const TYPE&
+iDArray<TYPE>::Back() const {
+	//TODO:: handle empty
+	const TYPE* e = end();
+	return *(--e);
 }

@@ -15,12 +15,10 @@
 #include "Structures/Interfaces/iArray.h"
 #include "ArrayPartition.h"
 
-template<typename TYPE>
-class iSlice : public iArrayPartition<TYPE> {
+template <typename TYPE>
+class iSliceEdit {
 public:
 	virtual size_t BaseSize() const = 0;
-	/// create a new slice from this slice
-	virtual Slice<TYPE> MakeSlice(size_t sliceOffset = 0, size_t numSliceItems = std::numeric_limits<size_t>::max()) override;
 	/// reset the slice to its default state
 	virtual void Reset() = 0;
 	/// set new absolute size
@@ -32,14 +30,13 @@ public:
 	/// if slice is 'to the right' of the gap, move offset to left by gapSize
 	//virtual void FillGap(int64_t gapOffset, int64_t gapSize) = 0;
 
-	virtual Slice<TYPE>& operator++() = 0;
-	virtual Slice<TYPE>  operator++(int) = 0;
-	virtual Slice<TYPE>& operator--() = 0;
-	virtual Slice<TYPE>  operator--(int) = 0;
-	virtual Slice<TYPE>& operator+=(int64_t) = 0;
-	virtual Slice<TYPE>& operator-=(int64_t) = 0;
-	virtual Slice<TYPE> operator+(int64_t) = 0;
-	virtual Slice<TYPE> operator-(int64_t) = 0;
+};
+
+template<typename TYPE>
+class iSlice : public iArrayPartition<TYPE>, public iSliceEdit<TYPE> {
+public:
+	virtual Slice<TYPE> MakeSlice(size_t sliceOffset = 0, size_t numSliceItems = std::numeric_limits<size_t>::max()) override;
+	
 };
 
 
@@ -78,14 +75,14 @@ public:
     /// if slice is 'to the right' of the gap, move offset to left by gapSize
     //void FillGap(int64_t gapOffset, int64_t gapSize) override;
 
-	Slice<TYPE>& operator++() override;
-	Slice<TYPE>  operator++(int) override;
-	Slice<TYPE>&  operator--() override;
-	Slice<TYPE>  operator--(int) override;
-	Slice<TYPE>& operator+=(int64_t) override;
-	Slice<TYPE>&  operator-=(int64_t) override;
-	Slice<TYPE> operator+(int64_t) override;
-	Slice<TYPE> operator-(int64_t) override;
+	Slice<TYPE>& operator++();
+	Slice<TYPE>  operator++(int);
+	Slice<TYPE>&  operator--();
+	Slice<TYPE>  operator--(int);
+	Slice<TYPE>& operator+=(int64_t);
+	Slice<TYPE>&  operator-=(int64_t);
+	Slice<TYPE> operator+(int64_t);
+	Slice<TYPE> operator-(int64_t);
 
 
 
