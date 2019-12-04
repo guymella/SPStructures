@@ -20,7 +20,8 @@
 
 template<typename TYPE>
 class iSmartSlice : public iSmartArrayPartition<TYPE>, public iSliceEdit<TYPE> {
-	SmartSlice<TYPE> MakeSmartSlice(size_t sliceOffset = 0, size_t numSliceItems = std::numeric_limits<size_t>::max()) override;
+	virtual SmartSlice<TYPE> MakeSmartSlice(size_t sliceOffset = 0, size_t numSliceItems = std::numeric_limits<size_t>::max()) override;
+	virtual Slice<TYPE> MakeSlice(size_t sliceOffset = 0, size_t numSliceItems = std::numeric_limits<size_t>::max()) override;
 };
 
 template<typename TYPE> 
@@ -29,13 +30,13 @@ public:
     /// default constructor
 	SmartSlice();
     /// init from base pointer, start index and number of items
-	SmartSlice(iDArray* base, size_t sliceOffset=0, size_t numSliceItems= std::numeric_limits<size_t>::max());
+	SmartSlice(iDArray<TYPE>* base, size_t sliceOffset=0, size_t numSliceItems= std::numeric_limits<size_t>::max());
     /// copy constructor
-	SmartSlice(const SmartSlice& rhs);
+	SmartSlice(const SmartSlice<TYPE>& rhs);
     /// copy-assignment
-    void operator=(const SmartSlice& rhs);
+    void operator=(const SmartSlice<TYPE>& rhs);
 	/// copy-assignment
-	bool operator==(const SmartSlice& rhs);
+	bool operator==(const SmartSlice<TYPE>& rhs);
     ///// read/write access to indexed item
     //TYPE& operator[](size_t index) override;
     ///// read-only access to indexed item
@@ -45,12 +46,10 @@ public:
 	
 		/// get the start index
 	virtual size_t Offset() const override;
-	//Get the base pointer
-	virtual TYPE* BasePointer() override;
-	virtual const TYPE* BasePointer() const override;
 	virtual iDArray<TYPE>* Base() override;
-	virtual const iDArray<TYPE>* Base() const override;
-	virtual size_t BaseSize() const override;
+	virtual const iDArray<TYPE>* Base() const override;	
+	virtual size_t BaseSize() const;
+	virtual void ChangeSize(int64_t delta) override;
     /// reset the slice to its default state
     void Reset();
     /// return true if Slice is empty
@@ -75,16 +74,6 @@ public:
 	SmartSlice<TYPE> operator+(int64_t);
 	SmartSlice<TYPE> operator-(int64_t);
 
-	//size_t FindIndexLinear(const TYPE& elm, size_t startIndex, size_t endIndex) const override;
-
-    /*/// C++ begin
-    TYPE* begin(const int64_t& offset = 0) override;
-    /// C++ begin
-    const TYPE* begin(const int64_t& offset = 0) const override;
-    /// C++ end
-    TYPE* end(const int64_t& offset = 0) override;
-    /// C++ end
-    const TYPE* end(const int64_t& offset = 0) const override;*/
 
 private:
     iDArray* basePtr = nullptr;
@@ -100,7 +89,7 @@ SmartSlice<TYPE>::SmartSlice() {
 
 //------------------------------------------------------------------------------
 template<typename TYPE>
-SmartSlice<TYPE>::SmartSlice(iDArray* base, size_t sliceOffset, size_t sliceNumItems):
+SmartSlice<TYPE>::SmartSlice(iDArray<TYPE>* base, size_t sliceOffset, size_t sliceNumItems):
 basePtr(base),
 offset(sliceOffset),
 num((sliceOffset+sliceNumItems> base->Size())? base->Size()- sliceOffset :sliceNumItems)
@@ -160,6 +149,12 @@ SmartSlice<TYPE>::Reset() {
 
 
 
+template<typename TYPE>
+inline size_t SmartSlice<TYPE>::Size() const
+{
+	return num;
+}
+
 //------------------------------------------------------------------------------
 template<typename TYPE> void
 SmartSlice<TYPE>::SetSize(size_t numSliceItems) {
@@ -171,6 +166,31 @@ SmartSlice<TYPE>::SetSize(size_t numSliceItems) {
 template<typename TYPE> 
 size_t SmartSlice<TYPE>::Offset() const {
     return this->offset;
+}
+
+template<typename TYPE>
+inline iDArray<TYPE>* SmartSlice<TYPE>::Base()
+{
+	return basePtr;
+}
+
+template<typename TYPE>
+inline const iDArray<TYPE>* SmartSlice<TYPE>::Base() const
+{
+	return basePtr;
+}
+
+template<typename TYPE>
+inline size_t SmartSlice<TYPE>::BaseSize() const
+{
+	return Base()->Size();
+	
+}
+
+template<typename TYPE>
+inline void SmartSlice<TYPE>::ChangeSize(int64_t delta)
+{
+	num += delta;
 }
 
 //------------------------------------------------------------------------------
@@ -260,3 +280,15 @@ inline SmartSlice<TYPE> SmartSlice<TYPE>::operator-(int64_t o)
 
 
 //} // namespace Oryol
+
+template<typename TYPE>
+inline SmartSlice<TYPE> iSmartSlice<TYPE>::MakeSmartSlice(size_t sliceOffset, size_t numSliceItems)
+{
+	return SmartSlice<TYPE>(Base(),Offset()+sliceOffset,numSliceItems);
+}
+
+template<typename TYPE>
+inline Slice<TYPE> iSmartSlice<TYPE>::MakeSlice(size_t sliceOffset, size_t numSliceItems)
+{
+	return Slice<TYPE>(BasePointer(),BaseSize(),Offset()+sliceOffset,numSliceItems);
+}

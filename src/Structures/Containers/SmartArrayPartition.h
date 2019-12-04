@@ -38,10 +38,11 @@ public:
 	/// get the start index
 	virtual size_t Offset() const = 0;
 	//Get the base pointer
-	virtual TYPE* BasePointer() = 0;
-	virtual const TYPE* BasePointer() const = 0;
+	virtual TYPE* BasePointer();
+	virtual const TYPE* BasePointer() const;
 	virtual iDArray<TYPE>* Base() = 0;
 	virtual const iDArray<TYPE>* Base() const =0;
+	virtual void ChangeSize(int64_t delta) = 0;
 	/// copy-add element to back of array
 	virtual TYPE& PushBack(const TYPE& elm) override;
 	/// move-add element to back of array
@@ -51,7 +52,7 @@ public:
 	/// move-add element to back of array
 	virtual TYPE& PushFront(TYPE&& elm) override;
 	/// construct-add new element at back of array
-    //template<class... ARGS> TYPE& PushBack(ARGS&&... args);
+	//template<class... ARGS> TYPE& PushBack(ARGS&&... args);
 	//template<class... ARGS> TYPE& PushFront(ARGS&&... args);
 	/// copy-insert element at index, keep array order
 	virtual void Insert(size_t index, const TYPE& elm) override;
@@ -64,20 +65,19 @@ public:
 	/// pop the first element
 	virtual TYPE PopFront() override;
 	virtual TYPE PopFront(size_t numElements) override;
-	/// erase element at index, keep element order
+	/*/// erase element at index, keep element order
 	virtual void Erase(size_t index) override;
 	/// erase element at index, swap-in front or back element (destroys element ordering)
 	virtual void EraseSwap(size_t index) override;
 	/// erase element at index, always swap-in from back (destroys element ordering)
 	virtual void EraseSwapBack(size_t index) override;
 	/// erase element at index, always swap-in from front (destroys element ordering)
-	virtual void EraseSwapFront(size_t index) override;
+	virtual void EraseSwapFront(size_t index) override;*/
 	/// erase a range of elements, keep element order
 	virtual void EraseRange(size_t index, size_t num) override;
 	virtual void ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount) override;
 
 	virtual void insertBlank(const size_t& index, size_t count = 1) override;
-
 
 	/// C++ begin
 	TYPE* begin(const int64_t& offset = 0) override;
@@ -169,6 +169,20 @@ public:
 //	return begin()[index];
 //}
 
+template<typename TYPE>
+inline TYPE* iSmartArrayPartition<TYPE>::BasePointer()
+{
+	return Base()->begin();
+}
+
+template<typename TYPE>
+inline const TYPE* iSmartArrayPartition<TYPE>::BasePointer() const
+{
+	return  Base()->begin();
+}
+
+
+
 //------------------------------------------------------------------------------
 template<typename TYPE> SmartSlice<TYPE>
 	iSmartArrayPartition<TYPE>::MakeSmartSlice(size_t sliceOffset, size_t numSliceItems) {
@@ -176,6 +190,12 @@ template<typename TYPE> SmartSlice<TYPE>
 			numSliceItems = Size() - sliceOffset;
 		}
 		return SmartSlice<TYPE>(Base(), Offset() + sliceOffset, numSliceItems);
+	}
+
+	template<typename TYPE>
+	inline Slice<TYPE> iSmartArrayPartition<TYPE>::MakeSlice(size_t sliceOffset, size_t numSliceItems)
+	{
+		return Slice<TYPE>(BasePointer(),Size(),sliceOffset,numSliceItems);
 	}
 
 	////------------------------------------------------------------------------------
@@ -201,6 +221,26 @@ template<typename TYPE> SmartSlice<TYPE>
 	//{
 	//	return basePtr;
 	//}
+
+	template<typename TYPE>
+	inline void iSmartArrayPartition<TYPE>::EraseRange(size_t index, size_t num)
+	{
+		Base()->EraseRange(Offset() + index, num);
+		ChangeSize(-(int64_t)num);
+	}
+
+	template<typename TYPE>
+	inline void iSmartArrayPartition<TYPE>::ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount)
+	{
+		Base()->ShiftRange(Offset() + StartIndex, numElements, shiftAmmount);
+	}
+
+	template<typename TYPE>
+	inline void iSmartArrayPartition<TYPE>::insertBlank(const size_t& index, size_t count)
+	{
+		Base()->insertBlank(Offset() + index, count);
+		ChangeSize(count);
+	}
 
 	//------------------------------------------------------------------------------
 	template<typename TYPE> TYPE*
@@ -247,3 +287,79 @@ template<typename TYPE> SmartSlice<TYPE>
 	}
 
 	//} // namespace Oryol
+
+	template<typename TYPE>
+	inline TYPE& iSmartArrayPartition<TYPE>::PushBack(const TYPE& elm)
+	{
+		Base()->Insert(Offset() + Size(), elm);
+		ChangeSize(1);
+		return Back();
+	}
+
+	template<typename TYPE>
+	inline TYPE& iSmartArrayPartition<TYPE>::PushBack(TYPE&& elm)
+	{
+		Base()->Insert(Offset() + Size(), std::move(elm));
+		ChangeSize(1);
+		return Back();
+	}
+
+	template<typename TYPE>
+	inline TYPE& iSmartArrayPartition<TYPE>::PushFront(const TYPE& elm)
+	{
+		Base()->Insert(Offset(), elm);
+		ChangeSize(1);
+		return Front();
+	}
+
+	template<typename TYPE>
+	inline TYPE& iSmartArrayPartition<TYPE>::PushFront(TYPE&& elm)
+	{
+		Base()->Insert(Offset(), std::move(elm));
+		ChangeSize(1);
+		return Front();
+	}
+
+	template<typename TYPE>
+	inline void iSmartArrayPartition<TYPE>::Insert(size_t index, const TYPE& elm)
+	{
+		Base()->Insert(Offset()+index, elm);
+		ChangeSize(1);
+	}
+
+	template<typename TYPE>
+	inline void iSmartArrayPartition<TYPE>::Insert(size_t index, TYPE&& elm)
+	{
+		Base()->Insert(Offset() + index, std::move(elm));
+		ChangeSize(1);
+	}
+
+	template<typename TYPE>
+	inline TYPE iSmartArrayPartition<TYPE>::PopBack()
+	{
+		TYPE b = Back();
+		Erase(Size() - 1);
+		return b;
+	}
+
+	template<typename TYPE>
+	inline TYPE iSmartArrayPartition<TYPE>::PopBack(size_t numElements)
+	{
+		//TODO::
+		return TYPE();
+	}
+
+	template<typename TYPE>
+	inline TYPE iSmartArrayPartition<TYPE>::PopFront()
+	{
+		TYPE f = Front();
+		Erase(0);
+		return f;
+	}
+
+	template<typename TYPE>
+	inline TYPE iSmartArrayPartition<TYPE>::PopFront(size_t numElements)
+	{
+		//TODO::
+		return TYPE();
+	}

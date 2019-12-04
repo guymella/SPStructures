@@ -42,7 +42,7 @@
 
 //namespace Structures {
 
-template<class TYPE> class Array : public iDDArray<TYPE>, public iSliceable<TYPE>//, public iSmartSliceable<TYPE> 
+template<class TYPE> class Array : public iDDArray<TYPE>, public iSliceable<TYPE>, public iSmartSliceable<TYPE> 
 {
 public:
     /// default constructor
@@ -96,7 +96,7 @@ public:
     //const TYPE& Back() const override;
     /// get a slice into the array (beware of iterator-invalidation!)
     Slice<TYPE> MakeSlice(size_t offset=0, size_t numItems= std::numeric_limits<size_t>::max()) override;
-	//virtual SmartSlice<TYPE> MakeSmartSlice(size_t sliceOffset = 0, size_t numSliceItems = std::numeric_limits<size_t>::max()) override;
+	virtual SmartSlice<TYPE> MakeSmartSlice(size_t sliceOffset = 0, size_t numSliceItems = std::numeric_limits<size_t>::max()) override;
 
     /// increase capacity to hold at least numElements more elements
 	void ReserveFront(const size_t& numElements) override;
@@ -137,14 +137,7 @@ public:
     /// pop the first element
     TYPE PopFront() override;
 	TYPE PopFront(size_t numElements) override;
-    /// erase element at index, keep element order
-    void Erase(size_t index) override;
-    /// erase element at index, swap-in front or back element (destroys element ordering)
-    void EraseSwap(size_t index) override;
-    /// erase element at index, always swap-in from back (destroys element ordering)
-    void EraseSwapBack(size_t index) override;
-    /// erase element at index, always swap-in from front (destroys element ordering)
-    void EraseSwapFront(size_t index) override;
+   
     /// erase a range of elements, keep element order
     void EraseRange(size_t index, size_t num) override;
     
@@ -353,11 +346,11 @@ Array<TYPE>::MakeSlice(size_t offset, size_t numItems) {
     return Slice<TYPE>(begin(), Size(), offset, numItems);
 }
 
-//template<class TYPE>
-//inline SmartSlice<TYPE> Array<TYPE>::MakeSmartSlice(size_t sliceOffset, size_t numSliceItems)
-//{
-//	return SmartSlice<TYPE>(this,sliceOffset,numSliceItems);
-//}
+template<class TYPE>
+inline SmartSlice<TYPE> Array<TYPE>::MakeSmartSlice(size_t sliceOffset, size_t numSliceItems)
+{
+	return SmartSlice<TYPE>(this,sliceOffset,numSliceItems);
+}
 
 template<class TYPE>
 inline void Array<TYPE>::ReserveFront(const size_t& numElements)
@@ -588,29 +581,7 @@ inline TYPE Array<TYPE>::PopFront(size_t numElements)
 	return TYPE();
 }
 
-//------------------------------------------------------------------------------
-template<class TYPE> void
-Array<TYPE>::Erase(size_t index) {
-	EraseRange(index, 1);
-}
 
-//------------------------------------------------------------------------------
-template<class TYPE> void
-Array<TYPE>::EraseSwap(size_t index) {
-	EraseSwapBack(index);
-}
-
-//------------------------------------------------------------------------------
-template<class TYPE> void
-Array<TYPE>::EraseSwapBack(size_t index) {
-	begin()[index] = PopBack();
-}
-
-//------------------------------------------------------------------------------
-template<class TYPE> void
-Array<TYPE>::EraseSwapFront(size_t index) {
-	begin()[index-1] = PopFront();
-}
 
 //------------------------------------------------------------------------------
 template<class TYPE> void

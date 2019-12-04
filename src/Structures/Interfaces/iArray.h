@@ -34,6 +34,22 @@ public:
 	/// read-only access to last element (must exist)
 	virtual const TYPE& Back() const override;
 
+	/// pop the last element
+	TYPE PopBack() override = 0;
+	TYPE PopBack(size_t numElements) override = 0;
+	/// pop the first element
+	TYPE PopFront() override = 0;
+	TYPE PopFront(size_t numElements) override = 0;
+
+	/// erase element at index, keep element order
+	void Erase(size_t index) override;
+	/// erase element at index, swap-in front or back element (destroys element ordering)
+	void EraseSwap(size_t index) override;
+	/// erase element at index, always swap-in from back (destroys element ordering)
+	void EraseSwapBack(size_t index) override;
+	/// erase element at index, always swap-in from front (destroys element ordering)
+	void EraseSwapFront(size_t index) override;
+
 };
 
 template <typename TYPE>
@@ -102,4 +118,28 @@ iDArray<TYPE>::Back() const {
 	//TODO:: handle empty
 	const TYPE* e = end();
 	return *(--e);
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> void
+iDArray<TYPE>::Erase(size_t index) {
+	EraseRange(index, 1);
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> void
+iDArray<TYPE>::EraseSwap(size_t index) {
+	EraseSwapBack(index);
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> void
+iDArray<TYPE>::EraseSwapBack(size_t index) {
+	begin()[index] = this->PopBack();
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> void
+iDArray<TYPE>::EraseSwapFront(size_t index) {
+	begin()[index - 1] = this->PopFront();
 }
