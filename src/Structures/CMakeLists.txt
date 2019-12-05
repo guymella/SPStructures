@@ -10,6 +10,7 @@ fips_begin_module(Structures)
         Allocator.h 
 		Block.h 
 		Table.h 
+		TableStruct.h
 		Partition.h
 		Array.h
 		ArrayPartition.h

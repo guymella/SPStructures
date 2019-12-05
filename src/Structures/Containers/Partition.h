@@ -8,15 +8,15 @@
 
 #include "Structures/Types.h"
 #include "Structures/Interfaces/iBlock.h"
-#include "Structures/Interfaces/iTable.h"
+//#include "Structures/Interfaces/iTable.h"
 #include <string.h>
 #include <memory>
 
-class iTable;
+class iTableFlexible;
 
 class Partition : public iDBlock { 
 public:
-	Partition(iTable* parentTable, size_t index);
+	Partition(iTableFlexible* parentTable, size_t index);
 	
 	
 	size_t Size() const override;
@@ -28,7 +28,7 @@ public:
 	const void* memStart() const override;
 
 private:
-	iTable* ParentTable = 0;
+	iTableFlexible* ParentTable = 0;
 	size_t TableIndex;
 	//dynamic size is stored inline at beggining of memory block
 
@@ -36,7 +36,7 @@ private:
 
 
 
-Partition::Partition(iTable* parentTable, size_t index) : ParentTable(parentTable), TableIndex(index)
+Partition::Partition(iTableFlexible* parentTable, size_t index) : ParentTable(parentTable), TableIndex(index)
 {
 
 }

@@ -171,6 +171,8 @@ void Slice<TYPE>::Move(int64_t delta) {
     //o_assert_dbg((this->offset + delta) >= 0);
     //o_assert_dbg((this->offset + delta + this->num) <= this->baseSize);
     this->offset += delta;
+	if (offset + num > baseSize)
+		num = baseSize - offset;
 }
 
 //------------------------------------------------------------------------------
