@@ -38,6 +38,8 @@ public:
 	virtual void EraseRange(size_t index, size_t num) = 0;
 
 	virtual void ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount) = 0;
+
+	virtual void Clear() = 0;
 };
 
 template <typename TYPE>
@@ -46,4 +48,3 @@ public:
 	/// find element index with slow linear search, return InvalidIndex if not found
 	virtual size_t FindIndexLinear(const TYPE& elm, size_t startIndex, size_t endIndex) const =0;
 };
-

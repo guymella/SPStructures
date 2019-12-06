@@ -24,7 +24,6 @@ struct CopyRange {
 	class iDynamicFlatten {
 	public:
 		virtual void Trim() = 0; // remove all spare
-		virtual void Clear() = 0;
 	};
 
 	class iDynamicGrow {

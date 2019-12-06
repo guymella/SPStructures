@@ -8,12 +8,16 @@ struct keyCompare {
 	size_t commonPrefix = 0;
 	size_t Postfix0 = 0;
 	size_t Postfix1 = 0;
+	bool LessThan;
+	bool Equal() { return commonPrefix && !(Postfix0 || Postfix1); }
 };
 
 class iKeyString {
 public:
 	virtual bool operator==(const iKeyString& rhs) const;
 	virtual keyCompare CompareTo(const iKeyString& rhs) const;
+	virtual size_t Tare(size_t tareLen = 0) = 0;
+protected:
 	virtual iArray<uint8_t>& StringData() = 0;
 	virtual const iArray<uint8_t>& StringData() const = 0;
 };
@@ -28,9 +32,12 @@ class iKeyRange{
 
 class KeyString : public iKeyString {
 public:
+	virtual size_t Tare(size_t tareLen = 0) override;
+protected:
 	virtual iArray<uint8_t>& StringData() override { return key; };
 	virtual const iArray<uint8_t>& StringData() const override { return key; };
 private:
+	
 	Array<uint8_t> key;
 	size_t tare;
 };
@@ -56,10 +63,16 @@ inline keyCompare iKeyString::CompareTo(const iKeyString& rhs) const
 	const uint8_t* r = rhs.StringData().begin();
 	size_t s = (rhs.StringData().Size() < StringData().Size()) ? rhs.StringData().Size() : StringData().Size();
 	if (s)
-		while (l[c.commonPrefix] == r[c.commonPrefix] && ++c.commonPrefix < s);
+		while (l[c.commonPrefix] == r[c.commonPrefix])
+			if (++c.commonPrefix < s) break;
 	c.Postfix0 = StringData().Size() - c.commonPrefix;
 	c.Postfix1 = rhs.StringData().Size() - c.commonPrefix;
+	c.LessThan = (l[c.commonPrefix] < r[c.commonPrefix]);
 	return c;
 }
 
-
+size_t KeyString::Tare(size_t tareLen)
+{
+	tare += tareLen;
+	return tare;
+}

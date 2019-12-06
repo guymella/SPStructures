@@ -32,6 +32,7 @@ private:
 };
 
 
+
 template <size_t SIZE>
 TableStruct<SIZE>::TableStruct(iDBlock* parentBlock) : _ParentBlock(parentBlock)
 {

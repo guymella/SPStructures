@@ -50,6 +50,8 @@ public:
 	/// erase element at index, always swap-in from front (destroys element ordering)
 	void EraseSwapFront(size_t index) override;
 
+	void Clear() override;
+
 };
 
 template <typename TYPE>
@@ -142,4 +144,10 @@ iDArray<TYPE>::EraseSwapBack(size_t index) {
 template<class TYPE> void
 iDArray<TYPE>::EraseSwapFront(size_t index) {
 	begin()[index - 1] = this->PopFront();
+}
+
+template<typename TYPE>
+inline void iDArray<TYPE>::Clear()
+{
+	EraseRange(0, Size());
 }

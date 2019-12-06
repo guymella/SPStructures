@@ -13,10 +13,12 @@ fips_begin_module(Structures)
 		TableStruct.h
 		Partition.h
 		Array.h
+		SparseArray.h
 		ArrayPartition.h
 		Slice.h
 		SmartArrayPartition.h
 		SmartSlice.h
+		Trie.h
     )
 
     fips_dir(interfaces)
@@ -32,6 +34,7 @@ fips_begin_module(Structures)
 		iIterable.h
 		iIterator.h
 		iStandard.h
+		iTrie.h
     )
 
     fips_dir(Types)
@@ -82,5 +85,6 @@ fips_begin_app(TestApp cmdline)
 		TableTest.h
 		SliceTest.h
 		SmartSliceTest.h
+		SparseArrayTest.h
     )
 fips_end_app()
