@@ -424,5 +424,86 @@ bool testSparseArray() {
 	//CHECK(array8.GetMinGrow() == 0);
 	//CHECK(array8.GetMaxGrow() == 0);
 
+
+	//Check Sparse
+	
+	SparseArray<int> array9;
+	for (int i = 0; i < 16; i++) {
+		array9.PushBack(i);
+	}
+	CHECK(array9.Size() == 16);
+	CHECK(!array9.Exists(20));
+	CHECK(array9[20] == 0);
+	CHECK(array9.Size() == 21);
+	CHECK(array9[22] = 123);
+	CHECK(array9.Size() == 23);
+	CHECK(array9.Exists(20));
+	CHECK(!array9.Exists(21));
+	CHECK(array9.Exists(22));
+	CHECK(*array9.Exists(20) == 0);
+	CHECK(*array9.Exists(22)==123);
+
+	//check shift
+	array9[20] = 122;
+	array9.PushBack(124);
+	array9.PushBack(125);
+	array9.ShiftRange(12, 10, -2);
+
+	CHECK(array9[9] == 9);
+	CHECK(array9[10] == 12);
+	CHECK(array9[11] == 13);
+	CHECK(array9[12] == 14);
+	CHECK(array9[13] == 15);
+	CHECK(!array9.Exists(14));
+	CHECK(!array9.Exists(15));
+	CHECK(*array9.Exists(18) == 122);
+	CHECK(!array9.Exists(19));
+	CHECK(!array9.Exists(20));
+	CHECK(!array9.Exists(21));
+	CHECK(*array9.Exists(22) == 123);
+	CHECK(*array9.Exists(23) == 124);
+	CHECK(*array9.Exists(24) == 125);
+	CHECK(!array9.Exists(25));
+
+	array9.ShiftRange(12, 11, 2);
+
+	CHECK(array9[9] == 9);
+	CHECK(array9[10] == 12);
+	CHECK(array9[11] == 13);
+	CHECK(!array9.Exists(12));
+	CHECK(!array9.Exists(13));
+	CHECK(array9[14] == 14);
+	CHECK(array9[15] == 15);
+	CHECK(!array9.Exists(18));
+	CHECK(*array9.Exists(20) == 122);
+	CHECK(!array9.Exists(21));
+	CHECK(!array9.Exists(22));
+	CHECK(!array9.Exists(23));
+	CHECK(*array9.Exists(24) == 123);
+	CHECK(!array9.Exists(25));
+
+	array9.ShiftRange(20, 10, 100);
+
+	CHECK(array9.Size() == 125);
+	CHECK(array9[9] == 9);
+	CHECK(array9[10] == 12);
+	CHECK(array9[11] == 13);
+	CHECK(!array9.Exists(12));
+	CHECK(!array9.Exists(13));
+	CHECK(array9[14] == 14);
+	CHECK(array9[15] == 15);
+	CHECK(!array9.Exists(18));
+	CHECK(!array9.Exists(20));
+	CHECK(!array9.Exists(21));
+	CHECK(!array9.Exists(22));
+	CHECK(!array9.Exists(23));
+	CHECK(!array9.Exists(24));
+	CHECK(*array9.Exists(120) == 122);
+	CHECK(!array9.Exists(121));
+	CHECK(!array9.Exists(122));
+	CHECK(!array9.Exists(123));
+	CHECK(*array9.Exists(124) == 123);
+	CHECK(array9.Back() == 123);
+
 	return true;
 }

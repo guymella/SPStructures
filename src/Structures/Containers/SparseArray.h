@@ -46,7 +46,8 @@ template<class TYPE> class SparseArray : public iDArray<TYPE>
 {
 public:
     /// default constructor
-	SparseArray() {};
+	SparseArray() { default = TYPE();  };
+	SparseArray(TYPE defaultValue) { default = defaultValue; };
     /// copy constructor (truncates to actual size)
 	SparseArray(const SparseArray& rhs);
     /// move constructor (same capacity and size)
@@ -121,6 +122,7 @@ public:
     /// C++ conform end
     const TYPE* end(const int64_t& offset = 0) const override;
     
+	const TYPE* Exists(size_t index) const;
 private:
     /// destroy array resources
     //void destroy();
@@ -134,8 +136,7 @@ private:
 	TYPE& GetOrCreate(size_t index);
 	iDArray<size_t>& Indexes() { return indexes; };
 	const iDArray<size_t>& Indexes() const { return indexes; };
-	size_t FindIndex(size_t index) const;
-	const TYPE* Exists(size_t index) const;
+	size_t FindIndex(size_t index) const;	
 	iDArray<TYPE>& Values() { return values; };
 	const iDArray<TYPE>& Values() const { return values; };
 	Array<TYPE> values;
@@ -205,7 +206,7 @@ inline void SparseArray<TYPE>::ShiftRange(size_t StartIndex, size_t numElements,
 
 	if (shiftAmmount > 0 && shiftAmmount < (int64_t)numElements)
 		DeleteStart = endIndex;
-	else if (shiftAmmount - 0 && -shiftAmmount < (int64_t)numElements)
+	else if (shiftAmmount < 0 && -shiftAmmount < (int64_t)numElements)
 		DeleteEnd = StartIndex;
 
 
@@ -336,7 +337,7 @@ inline void SparseArray<TYPE>::EraseRange(size_t index, size_t num)
 	size_t n = FindIndex(index + num)-b;
 	
 	Indexes().EraseRange(b, n);
-	Indexes().EraseRange(b, n);
+	Values().EraseRange(b, n);
 
 	for (size_t i = b; i < Indexes().Size(); i++) {
 		Indexes()[i] -= num;
