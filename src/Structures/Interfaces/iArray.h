@@ -60,6 +60,12 @@ public:
 
 	
 };
+template <typename TYPE>
+class iSparseArray : public iDArray<TYPE>, public iSparse<TYPE> {
+public:
+
+
+};
 
 template<class TYPE> 
 size_t iArray<TYPE>::FindIndexLinear(const TYPE& elm, size_t startIndex, size_t endIndex) const {

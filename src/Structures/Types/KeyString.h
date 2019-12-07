@@ -16,7 +16,9 @@ class iKeyString {
 public:
 	virtual bool operator==(const iKeyString& rhs) const;
 	virtual keyCompare CompareTo(const iKeyString& rhs) const;
-	virtual size_t Tare(size_t tareLen = 0) = 0;
+	virtual size_t& Tare(size_t tareLen = 0) = 0;
+	virtual size_t Tare() const=0;
+	friend class KeyString;
 protected:
 	virtual iArray<uint8_t>& StringData() = 0;
 	virtual const iArray<uint8_t>& StringData() const = 0;
@@ -30,16 +32,22 @@ class iKeyRange{
 	//virtual iKeyRange& Subtract(iKeyRange& rhs) = 0;
 };
 
-class KeyString : public iKeyString {
+
+
+class KeyString : public iKeyString {	
 public:
-	virtual size_t Tare(size_t tareLen = 0) override;
+	KeyString() {};
+	KeyString(const iKeyString& rhs);
+	virtual size_t& Tare(size_t tareLen = 0) override;
+	virtual size_t Tare() const override { return tare; };
+	virtual size_t Truncate(size_t NewLen);
 protected:
 	virtual iArray<uint8_t>& StringData() override { return key; };
 	virtual const iArray<uint8_t>& StringData() const override { return key; };
 private:
 	
 	Array<uint8_t> key;
-	size_t tare;
+	size_t tare =0;
 };
 
 class KeyStringRef : public iKeyString {
@@ -71,8 +79,23 @@ inline keyCompare iKeyString::CompareTo(const iKeyString& rhs) const
 	return c;
 }
 
-size_t KeyString::Tare(size_t tareLen)
+inline KeyString::KeyString(const iKeyString& rhs)
+{
+	const uint8_t* b = rhs.StringData().begin();
+
+	//TODO:: optimize
+	for (size_t i = rhs.Tare(); i < rhs.StringData().Size(); i++)
+		key.PushBack(b[i]);
+}
+
+size_t& KeyString::Tare(size_t tareLen)
 {
 	tare += tareLen;
 	return tare;
+}
+
+inline size_t KeyString::Truncate(size_t NewLen)
+{
+	key.EraseRange(NewLen, key.Size());
+	return key.Size();
 }

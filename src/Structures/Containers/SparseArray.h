@@ -42,7 +42,7 @@
 
 //namespace Structures {
 
-template<class TYPE> class SparseArray : public iDArray<TYPE> 
+template<class TYPE> class SparseArray : public iSparseArray<TYPE> 
 {
 public:
     /// default constructor
@@ -122,7 +122,8 @@ public:
     /// C++ conform end
     const TYPE* end(const int64_t& offset = 0) const override;
     
-	const TYPE* Exists(size_t index) const;
+	const TYPE* Exists(size_t index) const override;
+	TYPE* Exists(size_t index) override;
 private:
     /// destroy array resources
     //void destroy();
@@ -133,7 +134,7 @@ private:
     /// reallocate with new capacity
     //void adjustCapacity(size_t newCapacity);
     
-	TYPE& GetOrCreate(size_t index);
+	TYPE& GetOrCreate(size_t index) override;
 	iDArray<size_t>& Indexes() { return indexes; };
 	const iDArray<size_t>& Indexes() const { return indexes; };
 	size_t FindIndex(size_t index) const;	
@@ -414,6 +415,17 @@ inline size_t SparseArray<TYPE>::FindIndex(size_t index) const
 
 template<class TYPE>
 inline const TYPE* SparseArray<TYPE>::Exists(size_t index) const
+{
+	size_t i = FindIndex(index);
+
+	if (Indexes()[i] == index)
+		return &Values()[i];
+
+	return NULL;
+}
+
+template<class TYPE>
+inline TYPE* SparseArray<TYPE>::Exists(size_t index)
 {
 	size_t i = FindIndex(index);
 

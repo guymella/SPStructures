@@ -48,3 +48,14 @@ public:
 	/// find element index with slow linear search, return InvalidIndex if not found
 	virtual size_t FindIndexLinear(const TYPE& elm, size_t startIndex, size_t endIndex) const =0;
 };
+
+template <typename TYPE>
+class iSparse {
+public:
+	/// find element index with slow linear search, return InvalidIndex if not found
+	virtual const TYPE* Exists(size_t index) const=0;
+	virtual TYPE* Exists(size_t index)=0;
+protected:
+	virtual TYPE& GetOrCreate(size_t index)=0;
+
+};

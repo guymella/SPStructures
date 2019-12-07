@@ -6,6 +6,7 @@
 #include "Unittests/BlockTest.h"
 #include "Unittests/TableTest.h"
 #include "Unittests/SparseArrayTest.h"
+#include "Unittests/TrieTest.h"
 
 
 
@@ -15,6 +16,7 @@ int main(void) {
 	TestTable();
 	testArray();
 	testSparseArray();
+	TestTrie();
 
 	return 0;
 }

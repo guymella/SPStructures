@@ -124,7 +124,7 @@ public:
 	/// move-add element to back of array
 	TYPE& PushFront(TYPE&& elm);
     /// construct-add new element at back of array
- //   template<class... ARGS> TYPE& PushBack(ARGS&&... args);
+   //template<class... ARGS> TYPE& PushBack(ARGS&&... args);
 	//template<class... ARGS> TYPE& PushFront(ARGS&&... args);
     /// copy-insert element at index, keep array order
     void Insert(size_t index, const TYPE& elm) override;
@@ -532,7 +532,7 @@ Array<TYPE>::Insert(size_t index, TYPE&& elm) {
 //	if (!SpareBack())
 //		Grow();
 //	size++;
-//	Back() = std::forward<ARGS>(args)...;
+//	Back() = TYPE(std::forward<ARGS>(args)...);
 //    return Back();
 //}
 //

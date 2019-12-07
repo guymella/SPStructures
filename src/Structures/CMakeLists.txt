@@ -86,5 +86,6 @@ fips_begin_app(TestApp cmdline)
 		SliceTest.h
 		SmartSliceTest.h
 		SparseArrayTest.h
+		TrieTest.h
     )
 fips_end_app()
