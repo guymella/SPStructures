@@ -42,7 +42,7 @@ public:
 	/// copy-assignment operator (truncates to actual size)
 	void operator=(const DBlock& rhs) { copy(rhs); };
 	/// move-assignment operator (same capacity and size)
-	void operator=(DBlock&& rhs) { copy(rhs); };
+	void operator=(DBlock&& rhs) { move(std::move(rhs)); };
 	
 	bool Initialized() const;
 	size_t Size() const override;
@@ -82,7 +82,8 @@ void DBlock::destroy()
 inline void DBlock::InitializeBlock(const size_t& newSize)
 {
 	size = newSize;
-	blockStart = std::malloc(size);	
+	blockStart = newSize ? std::malloc(size) : 0;
+	//std::memset(blockStart, 0, size);
 }
 
 DBlock::DBlock(const size_t& size)  {
@@ -150,9 +151,11 @@ inline const void* DBlock::memStart() const
 inline void DBlock::copy(const DBlock& rhs)
 {
 	destroy();
-	InitializeBlock(rhs.Size());
-
-	memcpy(memStart(), rhs.memStart(), size);
+	if (rhs.size) {
+		InitializeBlock(rhs.size);
+		memcpy(memStart(), rhs.memStart(), size);
+	}
+	
 }
 inline void DBlock::move(DBlock&& rhs)
 {

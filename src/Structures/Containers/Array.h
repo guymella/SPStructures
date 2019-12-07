@@ -139,7 +139,7 @@ public:
 	TYPE PopFront(size_t numElements) override;
    
     /// erase a range of elements, keep element order
-    void EraseRange(size_t index, size_t num) override;
+    void EraseRange(size_t index, size_t num = std::numeric_limits<size_t>::max()) override;
     
     /// find element index with slow linear search, return InvalidIndex if not found
 	//size_t FindIndexLinear(const TYPE& elm, size_t startIndex=0, size_t endIndex=std::numeric_limits<size_t>::max()) const;
@@ -472,7 +472,8 @@ Array<TYPE>::PushBack(const TYPE& elm) {
 		Grow();
     }
 	size++;
-	Back() = elm;
+	new (end()-1) TYPE(std::move(elm));
+	//Back() = TYPE(elm);
     return Back();
 }
 
@@ -483,8 +484,9 @@ Array<TYPE>::PushBack(TYPE&& elm) {
 		Grow();
 	}
 	size++;
-	Back() = std::move(elm);
-	TYPE db = Back();
+	new (end()-1) TYPE(std::move(elm));
+	//Back() = TYPE(std::move(elm));
+	//TYPE db = Back();
 	return Back();
 }
 
@@ -496,7 +498,8 @@ inline TYPE& Array<TYPE>::PushFront(const TYPE& elm)
 	}
 	startElem--;
 	size++;
-	Front() = elm;
+	new (begin()) TYPE(elm);
+	//Front() = TYPE(elm);
 	return Front();
 }
 
@@ -508,7 +511,8 @@ inline TYPE& Array<TYPE>::PushFront(TYPE&& elm)
 	}
 	startElem--;
 	size++;
-	Front() = std::move(elm);
+	new (begin()) TYPE(std::move(elm));
+	//Front() = TYPE(std::move(elm));
 	return Front();
 }
     
@@ -586,6 +590,10 @@ inline TYPE Array<TYPE>::PopFront(size_t numElements)
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::EraseRange(size_t index, size_t num) {
+	if (index >= Size())
+		return;
+	if (num == std::numeric_limits<size_t>::max() || index + num > Size())
+		num = Size() - index;
 	if (index + num < Size())
 		ShiftRange(index + num, Size(), -(int64_t)num);
 	size-=num;
@@ -648,10 +656,14 @@ inline void Array<TYPE>::insertBlank(const size_t& index, size_t count)
 		copyMap[1].size = (Size() - index) * sizeof(TYPE);
 		copyMap[1].src = begin()+index;
 
-		Block()->GrowCopyMap(newSize, copyMap, 2);
+		Block()->GrowCopyMap(newSize * sizeof(TYPE), copyMap, 2);
 		startElem = newFP;
 	}
-
+	TYPE* b = begin(index);
+	for (size_t i = 0; i < count; i++) {
+		new (b) TYPE();
+		b++;
+	}
 	size += count;
 	
 }

@@ -393,6 +393,11 @@ inline void SparseArray<TYPE>::move(SparseArray&& rhs)
 template<class TYPE>
 inline TYPE& SparseArray<TYPE>::GetOrCreate(size_t index)
 {
+	if (!Size()) {
+		Indexes().PushBack(index);
+		return Values().PushBack(default);
+	}
+	
 	size_t i = FindIndex(index);
 
 	if (Indexes()[i] == index)
@@ -416,6 +421,9 @@ inline size_t SparseArray<TYPE>::FindIndex(size_t index) const
 template<class TYPE>
 inline const TYPE* SparseArray<TYPE>::Exists(size_t index) const
 {
+	if (!Size()) 
+		return NULL;
+
 	size_t i = FindIndex(index);
 
 	if (Indexes()[i] == index)
@@ -427,6 +435,9 @@ inline const TYPE* SparseArray<TYPE>::Exists(size_t index) const
 template<class TYPE>
 inline TYPE* SparseArray<TYPE>::Exists(size_t index)
 {
+	if (!Size()) 
+		return NULL;
+
 	size_t i = FindIndex(index);
 
 	if (Indexes()[i] == index)

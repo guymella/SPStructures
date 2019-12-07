@@ -35,7 +35,7 @@ public:
 	/// erase element at index, always swap-in from front (destroys element ordering)
 	virtual void EraseSwapFront(size_t index) = 0;
 	/// erase a range of elements, keep element order
-	virtual void EraseRange(size_t index, size_t num) = 0;
+	virtual void EraseRange(size_t index, size_t num = std::numeric_limits<size_t>::max()) = 0;
 
 	virtual void ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount) = 0;
 

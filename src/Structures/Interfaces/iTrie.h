@@ -35,14 +35,18 @@ protected:
 template<typename TYPE>
 inline TYPE* iTrieNode<TYPE>::Exists(iKeyString& checkKey)
 {
+	
 	iDArray<KeyString>& k = Keys();
 	for (size_t i = 0; i < k.Size(); i++) {
 		keyCompare c = k[i].CompareTo(checkKey);
 		if (c.commonPrefix) { //at least partial match
 			if (!c.Postfix0) { //no remainder
 				if (c.Postfix1) {//checkKey has remainder
+					size_t tare = checkKey.Tare();
 					checkKey.Tare(c.commonPrefix);
-					return GetChildNode(i).Exists(checkKey);
+					TYPE* rtn = GetChildNode(i).Exists(checkKey);
+					checkKey.Tare() = tare;
+					return rtn;
 				}
 				else
 					return ValueExists(i);
@@ -66,8 +70,11 @@ inline const TYPE* iTrieNode<TYPE>::Exists(iKeyString& checkKey) const
 		if (c.commonPrefix) { //at least partial match
 			if (!c.Postfix0) { //no remainder
 				if (c.Postfix1) {//checkKey has remainder
+					size_t tare = checkKey.Tare();
 					checkKey.Tare(c.commonPrefix);
-					return GetChildNode(i).Exists(checkKey);
+					const TYPE* rtn = GetChildNode(i).Exists(checkKey);
+					checkKey.Tare() = tare;
+					return rtn;
 				}
 				else
 					return ValueExists(i);
@@ -89,15 +96,22 @@ inline TYPE& iTrieNode<TYPE>::GetOrCreate(iKeyString& checkKey)
 	for (size_t i = 0; i < k.Size(); i++) {
 		keyCompare c = k[i].CompareTo(checkKey);
 		if (c.commonPrefix) { //at least partial match
-			checkKey.Tare(c.commonPrefix);
 			if (!c.Postfix0) { //no remainder key full match
-				if (c.Postfix1) //checkKey has remainder					
-					return GetChildNode(i).GetOrCreate(checkKey);
-				else //FULL MATCH
+				if (c.Postfix1) { //checkKey has remainder
+					size_t tare = checkKey.Tare();
+					checkKey.Tare(c.commonPrefix);
+					TYPE& rtn = GetChildNode(i).GetOrCreate(checkKey);
+					checkKey.Tare() = tare;
+					return rtn;
+				} else //FULL MATCH
 					return GetValue(i);
 			}
 			else {//key remainder = partial match. split key and push into child node
-				return PushDownPostfix(i, c.commonPrefix, checkKey);
+				size_t tare = checkKey.Tare();
+				checkKey.Tare(c.commonPrefix);
+				TYPE& rtn = PushDownPostfix(i, c.commonPrefix, checkKey);
+				checkKey.Tare() = tare;
+				return rtn; 
 			}
 		}//no match
 

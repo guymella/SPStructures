@@ -17,10 +17,16 @@ class TrieNode : public iTrieNode<TYPE> {
 public:
 	TrieNode() {};
 	TrieNode(iDArray<TrieNode<TYPE>>* nodeArray) : nodes(nodeArray) {};
+	TrieNode(const TrieNode<TYPE>& rhs);
+	TrieNode(TrieNode<TYPE>&& rhs);
+	void operator=(const TrieNode<TYPE>& rhs);
+	void operator=(TrieNode<TYPE>&& rhs);
+
+	//virtual TYPE& operator[](iKeyString& key) override { return GetOrCreate(key); };
 	bool operator==(const TrieNode<TYPE>& rhs) const;
 protected:
 	virtual TYPE& PushDownPostfix(size_t keyIndex, size_t prefixLen, iKeyString& newKey) override;
-	virtual iTrieNode<TYPE>& GetChildNode(size_t index) override { return (*nodes)[nodeRefs[index]]; };
+	virtual iTrieNode<TYPE>& GetChildNode(size_t index) override;
 	virtual const iTrieNode<TYPE>& GetChildNode(size_t index) const override { return (*nodes)[nodeRefs[index]]; };
 	virtual iDArray<KeyString>& Keys()override { return keys; };
 	virtual const iDArray<KeyString>& Keys() const override { return keys; };
@@ -34,6 +40,42 @@ private:
 	SparseArray<size_t> nodeRefs;
 	iDArray<TrieNode<TYPE>>* nodes;
 };
+
+template<typename TYPE>
+inline TrieNode<TYPE>::TrieNode(const TrieNode<TYPE>& rhs)
+{
+	keys = rhs.keys;
+	values = rhs.values;
+	nodeRefs = rhs.nodeRefs;
+	nodes = rhs.nodes;
+}
+
+template<typename TYPE>
+inline TrieNode<TYPE>::TrieNode(TrieNode<TYPE>&& rhs)
+{
+	keys = std::move(rhs.keys);
+	values = std::move(rhs.values);
+	nodeRefs = std::move(rhs.nodeRefs);
+	nodes = rhs.nodes;
+}
+
+template<typename TYPE>
+inline void TrieNode<TYPE>::operator=(const TrieNode<TYPE>& rhs)
+{
+	keys = rhs.keys;
+	values = rhs.values;
+	nodeRefs = rhs.nodeRefs;
+	nodes = rhs.nodes;
+}
+
+template<typename TYPE>
+inline void TrieNode<TYPE>::operator=(TrieNode<TYPE>&& rhs)
+{
+	keys = std::move(rhs.keys);
+	values = std::move(rhs.values);
+	nodeRefs = std::move(rhs.nodeRefs);
+	nodes = rhs.nodes;
+}
 
 template<typename TYPE>
 inline bool TrieNode<TYPE>::operator==(const TrieNode<TYPE>& rhs) const
@@ -53,11 +95,28 @@ inline TYPE& TrieNode<TYPE>::PushDownPostfix(size_t keyIndex, size_t prefixLen, 
 	oldKey.Tare(prefixLen);
 	KeyString post(oldKey);
 	node.keys.PushBack(oldKey);
-	node.values.PushBack(values[keyIndex]);
-	node.nodeRefs.PushBack(nodeRefs[keyIndex]);
+	TYPE* val = values.Exists(keyIndex);
+	if (val)
+		node.values.PushBack(*val);
+	size_t* ref = nodeRefs.Exists(keyIndex);
+	if (ref)
+		node.nodeRefs.PushBack(*ref);
 
 	Keys()[keyIndex].Truncate(prefixLen);
 	nodeRefs[keyIndex] = nodeID;
 
-	return node.GetOrCreate(newKey);
+	if (newKey.Size())
+		return node.GetOrCreate(newKey);
+	return values[keyIndex];
+}
+
+template<typename TYPE>
+inline iTrieNode<TYPE>& TrieNode<TYPE>::GetChildNode(size_t index)
+{
+	size_t* ref = nodeRefs.Exists(index);
+	if (ref)
+		return (*nodes)[nodeRefs[index]];
+
+	nodeRefs.Insert(index, nodes->Size());
+	return nodes->PushBack(TrieNode<TYPE>(nodes));
 }
