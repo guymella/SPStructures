@@ -1,43 +1,29 @@
 # SPStructures
 
 
+
+## TODO: v0.1
  - [ ] Block
-	-- [ ] Block Fixed
+	-- [ ] Block
 	-- [x] DBlock
 	-- [x] Partition
  - [ ] Table
 	-- [ ] Table Fixed
 	-- [x] Table Flexible
-	-- [ ] Table Dynamic
-	-- [ ] DTable
-
-
-
-
-
-## TODO: v0.1
- - [ ] Block
-	-- [ ] Block
-	-- [ ] DBlock
-	-- [ ] Partition
- - [ ] Table
-	-- [ ] Table Fixed
-	-- [ ] Table Flexible
-	-- [ ] Table Dynamic
-	-- [ ] DTable
+	-- [x] Table Dynamic
  - [ ] Array
-    -- [ ] DArray
+    -- [x] DArray
 	-- [ ] PackArray
-	-- [ ] SparseArray
+	-- [x] SparseArray
 	-- [ ] MultiArray
 	-- [ ] PackMultiArray
  - [ ] Keys
-    -- [ ] KeyString
+    -- [x] KeyString
 	-- [ ] KeyArray
 	-- [ ] KeyRange
 	-- [ ] Key Algorithms
  - [ ] Allocator
- - [ ] PackTrie
+ - [x] Trie
  - [ ] Struct
     -- [ ] Schema
     -- [ ] StructTable

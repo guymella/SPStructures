@@ -42,6 +42,7 @@ fips_begin_module(Structures)
         VarInt.h   
 		TypeDescr.h
 		KeyString.h
+		Schema.h
     )
 	
 	#fips_dir(Containers)
@@ -87,5 +88,6 @@ fips_begin_app(TestApp cmdline)
 		SmartSliceTest.h
 		SparseArrayTest.h
 		TrieTest.h
+		StructTest.h
     )
 fips_end_app()
