@@ -43,7 +43,7 @@ template <size_t SIZE>
 inline void TableStruct<SIZE>::InitializeTable()
 {
 	for (size_t i = 0; i < SIZE+1; i++)
-		Index()[i] = i;
+		Index()[i] = 0;
 }
 
 template <size_t SIZE>

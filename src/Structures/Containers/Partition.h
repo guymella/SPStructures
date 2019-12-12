@@ -8,11 +8,11 @@
 
 #include "Structures/Types.h"
 #include "Structures/Interfaces/iBlock.h"
-//#include "Structures/Interfaces/iTable.h"
+#include "Structures/Interfaces/iTable.h"
 #include <string.h>
 #include <memory>
 
-class iTableFlexible;
+//class iTableFlexible;
 
 class Partition : public iDBlock { 
 public:

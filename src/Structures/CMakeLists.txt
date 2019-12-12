@@ -44,6 +44,7 @@ fips_begin_module(Structures)
 		TypeDescr.h
 		KeyString.h
 		Schema.h
+        Struct.h
     )
 	
 	#fips_dir(Containers)

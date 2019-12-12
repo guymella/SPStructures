@@ -9,233 +9,124 @@
 #include "Structures/Types.h"
 #include "Structures/Interfaces/iTable.h"
 #include "Structures/Containers/Partition.h"
+#include "Array.h"
 
-class Table : public iTable {
+class Table : public iTableEditable {
 public:
 	Table() {};
-	Table(iDBlock* parentBlock);
-	Table(iDBlock* parentBlock, const size_t& size);
-	inline void InitializeTable(const size_t& size);
-	bool Initialized() const;
-	size_t Size() const override;
-	iDBlock* ParentBlock() override;
-	const iDBlock* ParentBlock() const override;
-	iDBlock* GetPartition(const size_t& index) override;
-	size_t GetPartitionSize(const size_t& index) const override;
-	void GrowPartition(const size_t& index) override;
+	Table(const size_t& size);
+	size_t Size() const override { return index.Size()-1; };
+	iDBlock* ParentBlock() override { return &block; };
+	const iDBlock* ParentBlock() const override { return &block; };
+	Partition GetPartition(const size_t& index) override;
+	//size_t GetPartitionSize(const size_t& index) const override;
+	/*void GrowPartition(const size_t& index) override;
 	void GrowPartition(const size_t& index, const size_t& NewSize) override;
-	void GrowPartition(const size_t& index, const size_t& NewSize, const size_t& frontPorch) override;
+	void GrowPartition(const size_t& index, const size_t& NewSize, const size_t& frontPorch) override;*/
 
-	void* FindPartitionMem(size_t index) override;
-	void* MemStart();
-	const void* MemStart() const;
-	void* MemEnd();
-	const void* MemEnd() const;
-	size_t IndexSpace() const;
-	size_t UsedSpace() const;
-	size_t FreeSpace() const;
-	const size_t* Index() const;
-	size_t* Index();
+	//void* FindPartitionMem(size_t index) override;
+	
+	//size_t IndexSpace() const;
+	//size_t UsedSpace() const;
+	//size_t FreeSpace() const;
+	//const size_t* Index() const;
+	//size_t* Index();
+	virtual iDArray<size_t>& GetIndex() override { return index; };
+	virtual const iDArray<size_t>& GetIndex() const override { return index; };
+	virtual Partition Push(size_t NewSize = 0) override;//add new partition to end of table
 
 private:
 	
-
-	iDBlock* _ParentBlock = 0;
-	size_t partitionCount = 0;
+	Array<size_t> index;
+	DBlock block;
 	//dynamic size is stored inline at beggining of memory block
 
 };
 
 
-
-Table::Table(iDBlock* parentBlock) : _ParentBlock(parentBlock)
+Table::Table( const size_t& size) 
 {
-	InitializeTable(0);
+	for (size_t i = 0; i < size+1; i++)
+		index.PushBack(0);
 }
 
-Table::Table(iDBlock* parentBlock, const size_t& size) : _ParentBlock(parentBlock)
+inline Partition Table::GetPartition(const size_t& index) // do not use
 {
-	InitializeTable(size);
-}
-
-inline void Table::InitializeTable(const size_t& size)
-{//set contents of block to table and init
-	size_t headerSize = sizeof(baseTypes) + sizeof(size_t) * (size + 1)+ size;
-	if (ParentBlock()->Size() < headerSize) {
-		ParentBlock()->Grow(headerSize);
-	}
-	//set type
-	//ParentBlock()->SetType(baseTypes::MemTable);
-	//set header
-	size_t* s = (size_t*)ParentBlock()->memStart();
-	partitionCount = size;
-	for (size_t i = 0; i < partitionCount; i++) {
-		s[i] = 1;//partitions must have non 0 size //todo:: could fix this but requires more prework on grow partion
-	}
-}
-
-bool Table::Initialized() const
-{
-	return partitionCount;
-}
-
-size_t Table::Size() const
-{
-	return partitionCount;
-}
-
-inline iDBlock* Table::ParentBlock()
-{
-	return _ParentBlock;
-}
-
-inline const iDBlock* Table::ParentBlock() const
-{
-	return _ParentBlock;
-}
-
-inline iDBlock* Table::GetPartition(const size_t& index) // do not use
-{
-	return new Partition(this,index);
+	return Partition(this,index);
 	
 }
 
-inline size_t Table::GetPartitionSize(const size_t& index) const
-{
-	if (index >= Size())
-		return 0;
 
-	return Index()[index];
+
+//inline void Table::GrowPartition(const size_t& index)
+//{
+//	size_t s = Size();
+//	if (s)
+//		GrowPartition(index,(size_t)((double)s * 1.618));
+//	else
+//		GrowPartition(index,9);
+//}
+//
+//inline void Table::GrowPartition(const size_t& index, const size_t& NewSize)
+//{
+//	//if (index >= Size()) return;
+//
+//	if (NewSize <= Index()[index]) return;
+//
+//	size_t needed = NewSize - Index()[index];
+//	int64_t growNeeded = needed - FreeSpace();
+//
+//
+//	//TODO:: replace with copy map grow
+//	if (growNeeded > 0)
+//		ParentBlock()->Grow(ParentBlock()->Size() + needed);
+//
+//	//shift fallowing partitions
+//	if (index < Size() - 1) {
+//		void* cb = FindPartitionMem(index + 1);
+//		size_t cs = (size_t)MemEnd() - (size_t)cb;
+//		void* cd = (uint8_t*)cb + needed;
+//		/*int* cur = (int*)cb;
+//		int x = cur[0], y = cur[1];*/
+//		memmove(cd, cb, cs);
+//
+//		/*int* aft = (int*)cd;
+//		x = aft[0], y = aft[1];
+//		x = 1;*/
+//	}
+//	
+//
+//	//increase desired partiton size
+//	Index()[index] = NewSize;
+//
+//
+//}
+//
+//inline void Table::GrowPartition(const size_t& index, const size_t& NewSize, const size_t& frontPorch)
+//{
+//	//todo::
+//}
+//
+//inline void* Table::FindPartitionMem(size_t index)
+//{
+//	if (!Size() || index >= Size())
+//		return NULL;
+//	
+//	uint8_t* b = (uint8_t*)(begin());
+//	
+//	size_t* partIndex = Index();
+//	//b is index of first block
+//	for (size_t i = 0; i < index;  i++) {
+//		b += partIndex[i];
+//	}
+//
+//	return b;
+//}
+
+inline Partition Table::Push(size_t NewSize)
+{
+	GetIndex().PushBack(GetIndex().Back());
+	GrowPartition(Size() - 1, NewSize);
+	return Partition(this,Size()-1);
 }
 
-inline void Table::GrowPartition(const size_t& index)
-{
-	size_t s = Size();
-	if (s)
-		GrowPartition(index,(size_t)((double)s * 1.618));
-	else
-		GrowPartition(index,9);
-}
-
-inline void Table::GrowPartition(const size_t& index, const size_t& NewSize)
-{
-	//if (index >= Size()) return;
-
-	if (NewSize <= Index()[index]) return;
-
-	size_t needed = NewSize - Index()[index];
-	int64_t growNeeded = needed - FreeSpace();
-
-
-	//TODO:: replace with copy map grow
-	if (growNeeded > 0)
-		ParentBlock()->Grow(ParentBlock()->Size() + needed);
-
-	//shift fallowing partitions
-	if (index < Size() - 1) {
-		void* cb = FindPartitionMem(index + 1);
-		size_t cs = (size_t)MemEnd() - (size_t)cb;
-		void* cd = (uint8_t*)cb + needed;
-		/*int* cur = (int*)cb;
-		int x = cur[0], y = cur[1];*/
-		memmove(cd, cb, cs);
-
-		/*int* aft = (int*)cd;
-		x = aft[0], y = aft[1];
-		x = 1;*/
-	}
-	
-
-	//increase desired partiton size
-	Index()[index] = NewSize;
-
-
-}
-
-inline void Table::GrowPartition(const size_t& index, const size_t& NewSize, const size_t& frontPorch)
-{
-	//todo::
-}
-
-inline void* Table::FindPartitionMem(size_t index)
-{
-	if (!Size() || index >= Size())
-		return NULL;
-	
-	uint8_t* b = (uint8_t*)(MemStart());
-	
-	size_t* partIndex = Index();
-	//b is index of first block
-	for (size_t i = 0; i < index;  i++) {
-		b += partIndex[i];
-	}
-
-	return b;
-}
-
-inline void* Table::MemStart()
-{
-	uint8_t* b = (uint8_t*)ParentBlock()->memStart();
-	//size_t db = (size_t)b;
-	return b + IndexSpace(); //mem starts after index
-}
-
-inline const void* Table::MemStart() const
-{
-	uint8_t* b = (uint8_t*)ParentBlock()->memStart();
-	//size_t db = (size_t)b;
-	return b + IndexSpace(); //mem starts after index
-}
-
-inline void* Table::MemEnd()
-{
-	uint8_t* b = (uint8_t*)MemStart();
-	size_t* ind = Index();
-	for (size_t i = 0; i < Size(); i++) {
-		b += ind[i];
-	}
-	size_t db = (size_t)b;
-	return b;
-}
-
-inline const void* Table::MemEnd() const
-{
-	uint8_t* b = (uint8_t*)MemStart();
-	//size_t db = (size_t)b;
-	//b += sizeof(size_t) * (Size() + 1);//offset by in
-	//db = (size_t)b;
-	const size_t* ind = Index();
-	for (size_t i = 0; i < Size(); i++) {
-		b += ind[i];
-	}
-	//db = (size_t)b;
-	return b;
-}
-
-inline size_t Table::IndexSpace() const
-{
-	return sizeof(size_t) * (Size() + 1);
-}
-
-inline size_t Table::UsedSpace() const
-{
-	//size_t me = (size_t)MemEnd();
-	//size_t ms = (size_t)ParentBlock()->memStart();
-
-	return ((size_t)MemEnd()) - (size_t) ParentBlock()->memStart();
-}
-
-inline size_t Table::FreeSpace() const
-{
-	return ParentBlock()->Size()-UsedSpace();
-}
-
-inline const size_t* Table::Index() const
-{
-	return (size_t*)ParentBlock()->begin();
-}
-
-inline size_t* Table::Index()
-{
-	return (size_t*)ParentBlock()->begin();
-}

@@ -4,7 +4,8 @@
 //------------------------------------------------------------------------------
 
 #include "Structures/Containers/TableStruct.h"
-#include "Structures/Containers/Block.h"
+#include "Structures/Containers/Table.h"
+//#include "Structures/Containers/Block.h"
 
 
 bool TestTable()
@@ -52,6 +53,46 @@ bool TestTable()
 	p = (int*)pp0.memStart();
 	xx = p[0];
 	yy = p[1];
+
+
+
+
+	//Test EditableTable
+	Table tt(5);
+
+	size_t z = tt.end() - tt.begin();
+
+	size_t uus = tt.UsedSpace();
+	size_t ffs = tt.FreeSpace();
+
+	size_t ss = tt.Size();
+	//baseTypes tt = b.Type();
+
+	auto p0 = tt.GetPartition(0);
+	auto p1 = tt.GetPartition(1);
+	size_t ps0 = p0.Size();
+	size_t ps1 = p1.Size();
+	p1.Grow(8);
+	ps0 = p0.Size();
+	ps1 = p1.Size();
+	int* pa = (int*)p1.begin();
+	pa[0] = 5;
+	pa[1] = 7;
+
+	p0.Grow(8);
+	ps0 = p0.Size();
+	ps1 = p1.Size();
+	pa = (int*)p0.begin();
+	pa[0] = 3;
+	pa[1] = 4;
+
+	pa = (int*)p1.begin();
+	int x = pa[0];
+	int y = pa[1];
+
+	pa = (int*)p0.begin();
+	x = pa[0];
+	y = pa[1];
 
 	return true;
 }

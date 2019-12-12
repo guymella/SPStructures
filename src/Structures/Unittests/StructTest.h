@@ -3,7 +3,7 @@
 //  Test Table class.
 //------------------------------------------------------------------------------
 
-#include "Structures/Types/Schema.h"
+#include "Structures/Types/Struct.h"
 #include <assert.h>
 #define CHECK assert
 
@@ -59,6 +59,8 @@ bool TestStruct()
 	CHECK(!s.Normalized());
 	s.Normalize();
 	CHECK(s.Normalized());
+
+	Object s1(&s);
 
 	return true;
 }

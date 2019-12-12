@@ -13,8 +13,8 @@ public:
 	virtual bool Empty() const { return !Size(); };
 };
 
-class iBlockCountable { //for blocks always in bytes
-public:
-	virtual size_t MemSize() const = 0;
-	virtual bool MemEmpty() const { return !MemSize(); };
-};
+//class iBlockCountable { //for blocks always in bytes
+//public:
+//	virtual size_t MemSize() const = 0;
+//	virtual bool MemEmpty() const { return !MemSize(); };
+//};
