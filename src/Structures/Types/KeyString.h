@@ -2,6 +2,11 @@
 //  KeyString.h
 //------------------------------------------------------------------------------
 
+#ifndef Included_Keys_H
+#define Included_Keys_H
+
+
+
 #include "Structures/Containers/Array.h"
 #include <cstring>
 
@@ -76,7 +81,7 @@ inline keyCompare iKeyString::CompareTo(const iKeyString& rhs) const
 	size_t s = (rhs.Size() < Size()) ? rhs.Size() : Size();
 	if (s)
 		while (l[c.commonPrefix] == r[c.commonPrefix])
-			if (++c.commonPrefix = s) break;
+			if (++c.commonPrefix == s) break;
 	c.Postfix0 = Size() - c.commonPrefix;
 	c.Postfix1 = rhs.Size() - c.commonPrefix;
 	c.LessThan = (l[c.commonPrefix] < r[c.commonPrefix]);
@@ -113,3 +118,5 @@ inline size_t KeyString::Truncate(size_t NewLen)
 	key.EraseRange(NewLen);
 	return key.Size();
 }
+
+#endif //Keys

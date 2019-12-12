@@ -278,10 +278,10 @@ bool testArray() {
 	CHECK(array2[5] == 11);
 
 	// FindIndexLinear
-	CHECK(array2.FindIndexLinear(3) == 2);
+	//CHECK(array2.FindIndexLinear(3) == 2);
 	//CHECK(array2.FindIndexLinear(7, 0, 3) == InvalidIndex);
 	//CHECK(array2.FindIndexLinear(7, 3, InvalidIndex) == 3);
-	CHECK(array2.FindIndexLinear(11) == 5);
+	//CHECK(array2.FindIndexLinear(11) == 5);
 
 	// reverse sort
 	std::sort(array2.begin(), array2.end(), [](int a, int b) {

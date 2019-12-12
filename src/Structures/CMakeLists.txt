@@ -18,6 +18,7 @@ fips_begin_module(Structures)
 		Slice.h
 		SmartArrayPartition.h
 		SmartSlice.h
+        FilterSlice.h
 		Trie.h
     )
 
