@@ -75,18 +75,18 @@ public:
 	virtual void EraseSwapFront(size_t index) override;*/
 	/// erase a range of elements, keep element order
 	virtual void EraseRange(size_t index, size_t num) override;
-	virtual void ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount) override;
+	//virtual void ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount) override;
 
 	virtual void insertBlank(const size_t& index, size_t count = 1) override;
 
 	/// C++ begin
-	TYPE* begin(const int64_t& offset = 0) override;
+	Itr<TYPE> begin(const int64_t& offset = 0) override;
 	/// C++ begin
-	const TYPE* begin(const int64_t& offset = 0) const override;
+	Itr<const TYPE> begin(const int64_t& offset = 0) const override;
 	/// C++ end
-	TYPE* end(const int64_t& offset = 0) override;
+	Itr<TYPE> end(const int64_t& offset = 0) override;
 	/// C++ end
-	const TYPE* end(const int64_t& offset = 0) const override;
+	Itr<const TYPE> end(const int64_t& offset = 0) const override;
 };
 
 //template<typename TYPE>
@@ -229,11 +229,11 @@ template<typename TYPE> SmartSlice<TYPE>
 		ChangeSize(-(int64_t)num);
 	}
 
-	template<typename TYPE>
-	inline void iSmartArrayPartition<TYPE>::ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount)
-	{
-		Base()->ShiftRange(Offset() + StartIndex, numElements, shiftAmmount);
-	}
+	//template<typename TYPE>
+	//inline void iSmartArrayPartition<TYPE>::ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount)
+	//{
+	//	Base()->ShiftRange(Offset() + StartIndex, numElements, shiftAmmount);
+	//}
 
 	template<typename TYPE>
 	inline void iSmartArrayPartition<TYPE>::insertBlank(const size_t& index, size_t count)
@@ -243,46 +243,46 @@ template<typename TYPE> SmartSlice<TYPE>
 	}
 
 	//------------------------------------------------------------------------------
-	template<typename TYPE> TYPE*
+	template<typename TYPE> Itr<TYPE>
 		iSmartArrayPartition<TYPE>::begin(const int64_t& poffset) {
 		if (BasePointer()) {
-			return BasePointer() + Offset() + poffset;
+			return Itr<TYPE>(BasePointer() + Offset() + poffset);
 		}
 		else {
-			return nullptr;
+			return Itr<TYPE>(nullptr);
 		}
 	}
 
 	//------------------------------------------------------------------------------
-	template<typename TYPE> const TYPE*
+	template<typename TYPE> Itr<const TYPE>
 		iSmartArrayPartition<TYPE>::begin(const int64_t& poffset) const {
-		if (BasePointer()) {
-			return BasePointer() + Offset() + poffset;
-		}
-		else {
-			return nullptr;
-		}
+			if (BasePointer()) {
+				return Itr<const TYPE>(BasePointer() + Offset() + poffset);
+			}
+			else {
+				return Itr<const TYPE>(nullptr);
+			}
 	}
 
 	//------------------------------------------------------------------------------
-	template<typename TYPE> TYPE*
+	template<typename TYPE> Itr<TYPE>
 		iSmartArrayPartition<TYPE>::end(const int64_t& poffset) {
 		if (BasePointer()) {
-			return begin(poffset) + Size();
+			return begin(poffset+ Size()) ;
 		}
 		else {
-			return nullptr;
+			return Itr<TYPE>(nullptr);
 		}
 	}
 
 	//------------------------------------------------------------------------------
-	template<typename TYPE> const TYPE*
+	template<typename TYPE> Itr<const TYPE>
 		iSmartArrayPartition<TYPE>::end(const int64_t& poffset) const {
 		if (BasePointer()) {
-			return begin(poffset) + Size();
+			return begin(poffset + Size());
 		}
 		else {
-			return nullptr;
+			return Itr<const TYPE>(nullptr);
 		}
 	}
 

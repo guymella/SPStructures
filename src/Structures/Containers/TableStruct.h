@@ -21,10 +21,10 @@ public:
 	const iDBlock* ParentBlock() const override { return _ParentBlock; };
 	const size_t* Index() const override { return (size_t*)index; };
 	size_t* Index() override { return (size_t*)index; };
-	virtual uint8_t* begin(const int64_t& offset = 0) override { return ParentBlock()->begin()+offset; };
-	virtual const uint8_t* begin(const int64_t& offset = 0) const  override { return ParentBlock()->begin() + offset; };
-	virtual uint8_t* end(const int64_t& offset = 0) override { return begin(Index()[SIZE]); };
-	virtual const uint8_t* end(const int64_t& offset = 0) const override { return begin(Index()[SIZE]); };
+	virtual Itr<uint8_t> begin(const int64_t& offset = 0) override { return ParentBlock()->begin(offset); };
+	virtual Itr<const uint8_t> begin(const int64_t& offset = 0) const  override { return ParentBlock()->begin(offset); };
+	virtual Itr<uint8_t> end(const int64_t& offset = 0) override { return begin(Index()[SIZE]); };
+	virtual Itr<const uint8_t> end(const int64_t& offset = 0) const override { return begin(Index()[SIZE]); };
 	virtual Partition GetPartition(const size_t& index) override;
 private:
 	iDBlock* _ParentBlock = 0;

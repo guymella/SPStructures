@@ -7,8 +7,13 @@
 
 class Entity {
 public:
-	Entity(Schema* SchemaPointer) : schemaPtr(SchemaPointer) {};
+	Entity(Schema* SchemaPointer);
 private:
 	Schema* schemaPtr;
 	Table data;
 };
+
+Entity::Entity(Schema* SchemaPointer) : schemaPtr(SchemaPointer)
+{
+	data.GetIndex() = schemaPtr->GetTableIndex();
+}

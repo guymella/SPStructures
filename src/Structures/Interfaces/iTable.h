@@ -14,7 +14,7 @@
 
 class Partition;
 
-	class iTable : public iCountable, public iCIterable<uint8_t>
+	class iTable : public iCountable, public iIterable<uint8_t>
 	{
 	public:
 		//size_t* GetCopyMap() const; //returns a copy map tree
@@ -24,6 +24,7 @@ class Partition;
 		virtual const size_t* Index() const = 0;
 		virtual Partition GetPartition(const size_t& index)=0; //returns partition at index as block
 		virtual size_t GetPartitionSize(const size_t& index) const;
+		virtual size_t GetPartitionCapacity(const size_t& index) const;
 		virtual void* FindPartitionMem(size_t index);
 		
 	};
@@ -41,13 +42,13 @@ class Partition;
 		virtual size_t FreeSpace() const;
 																											  //void GrowPartition(const size_t& index, const size_t& NewSize, size_t* CopyMap); // grow partition to specific size with copy map
 			/// C++ conform begin
-		virtual uint8_t* begin(const int64_t& offset = 0) { return ParentBlock()->begin(offset); };
+		virtual Itr<uint8_t> begin(const int64_t& offset = 0) { return ParentBlock()->begin(offset); };
 		/// C++ conform begin
-		virtual const uint8_t* begin(const int64_t& offset = 0) const { return ParentBlock()->begin(offset); };
+		virtual Itr<const uint8_t> begin(const int64_t& offset = 0) const { return ParentBlock()->begin(offset); };
 		/// C++ conform end
-		virtual uint8_t* end(const int64_t& offset = 0) { return ParentBlock()->begin(UsedSpace() + offset); };
+		virtual Itr<uint8_t> end(const int64_t& offset = 0) { return ParentBlock()->begin(UsedSpace() + offset); };
 		/// C++ conform end
-		virtual const uint8_t* end(const int64_t& offset = 0) const { return ParentBlock()->begin(UsedSpace() + offset); };
+		virtual Itr<const uint8_t> end(const int64_t& offset = 0) const { return ParentBlock()->begin(UsedSpace() + offset); };
 	};
 
 	class iTableEditable : public iTableFlexible
@@ -75,6 +76,14 @@ class Partition;
 	//}
 
 	inline size_t iTable::GetPartitionSize(const size_t& index) const
+	{
+		if (index >= Size())
+			return 0;
+
+		return Index()[index + 1] - Index()[index];
+	}
+
+	inline size_t iTable::GetPartitionCapacity(const size_t& index) const
 	{
 		if (index >= Size())
 			return 0;

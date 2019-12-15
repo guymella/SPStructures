@@ -42,13 +42,13 @@ public:
 	//size_t FindIndexLinear(const TYPE& elm, size_t startIndex, size_t endIndex) const override;
 
 	/// C++ begin
-	TYPE* begin(const int64_t& offset = 0) override;
+	virtual Itr<TYPE> begin(const int64_t& offset = 0) override;
 	/// C++ begin
-	const TYPE* begin(const int64_t& offset = 0) const override;
+	virtual Itr<const TYPE> begin(const int64_t& offset = 0) const override;
 	/// C++ end
-	TYPE* end(const int64_t& offset = 0) override;
+	virtual Itr<TYPE> end(const int64_t& offset = 0) override;
 	/// C++ end
-	const TYPE* end(const int64_t& offset = 0) const override;
+	virtual Itr<const TYPE> end(const int64_t& offset = 0) const override;
 };
 
 template<typename TYPE>
@@ -166,46 +166,46 @@ inline const TYPE* ArrayPartition<TYPE>::BasePointer() const
 }
 
 //------------------------------------------------------------------------------
-template<typename TYPE> TYPE*
-iArrayPartition<TYPE>::begin(const int64_t& poffset) {
+template<typename TYPE> 
+Itr<TYPE> iArrayPartition<TYPE>::begin(const int64_t& poffset) {
     if (BasePointer()) {
-        return BasePointer() + Offset() + poffset;
+        return Itr<TYPE>(BasePointer() + Offset() + poffset);
     }
     else {
-        return nullptr;
+        return Itr<TYPE>(nullptr);
     }
 }
 
 //------------------------------------------------------------------------------
-template<typename TYPE> const TYPE*
-iArrayPartition<TYPE>::begin(const int64_t& poffset) const {
+template<typename TYPE> 
+Itr<const TYPE> iArrayPartition<TYPE>::begin(const int64_t& poffset) const {
 	if (BasePointer()) {
-		return BasePointer() + Offset() + poffset;
+		return Itr<const TYPE>(BasePointer() + Offset() + poffset);
 	}
 	else {
-		return nullptr;
+		return Itr<const TYPE>(nullptr);
 	}
 }
 
 //------------------------------------------------------------------------------
-template<typename TYPE> TYPE*
-iArrayPartition<TYPE>::end(const int64_t& poffset) {
+template<typename TYPE>
+Itr<TYPE> iArrayPartition<TYPE>::end(const int64_t& poffset) {
     if (BasePointer()) {
-        return begin(poffset)+ Size();
+        return begin(poffset+ Size());
     }
     else {
-        return nullptr;
+        return Itr<TYPE>(nullptr);
     }
 }
 
 //------------------------------------------------------------------------------
-template<typename TYPE> const TYPE*
-iArrayPartition<TYPE>::end(const int64_t& poffset) const {
+template<typename TYPE>
+Itr<const TYPE> iArrayPartition<TYPE>::end(const int64_t& poffset) const {
 	if (BasePointer()) {
-		return begin(poffset) + Size();
+		return begin(poffset + Size());
 	}
 	else {
-		return nullptr;
+		return Itr<const TYPE>(nullptr);
 	}
 }
 

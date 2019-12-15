@@ -7,6 +7,7 @@ fips_begin_module(Structures)
 	
     fips_dir(Containers)
     fips_files(
+        Vector.h
         Allocator.h 
 		Block.h 
 		Table.h 
@@ -33,7 +34,6 @@ fips_begin_module(Structures)
 		iQueue.h
 		iIndexable.h
 		iIterable.h
-		iIterator.h
 		iStandard.h
 		iTrie.h
     )
@@ -45,8 +45,15 @@ fips_begin_module(Structures)
 		KeyString.h
 		Schema.h
         Entity.h
+        CopyMap.h
+        Iterator.h
     )
 	
+    fips_dir(Types/Interfaces)
+    fips_files(
+        iIterator.h
+    )
+
 	#fips_dir(Containers)
     #fips_files(
         #ArrayMap.h

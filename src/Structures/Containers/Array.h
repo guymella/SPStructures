@@ -95,7 +95,7 @@ public:
     /// read-only access to last element (must exist)
     //const TYPE& Back() const override;
     /// get a slice into the array (beware of iterator-invalidation!)
-    Slice<TYPE> MakeSlice(size_t offset=0, size_t numItems= std::numeric_limits<size_t>::max()) override;
+    virtual Slice<TYPE> MakeSlice(size_t offset=0, size_t numItems= std::numeric_limits<size_t>::max()) override;
 	virtual SmartSlice<TYPE> MakeSmartSlice(size_t sliceOffset = 0, size_t numSliceItems = std::numeric_limits<size_t>::max()) override;
 
     /// increase capacity to hold at least numElements more elements
@@ -105,8 +105,11 @@ public:
 	void Reserve(const size_t& numElementsFront, const size_t& numElementsBack) override;
 	void ShiftBack(const size_t& numShift) override; //free up spare without realloc
 	void ShiftFront(const size_t& numShift) override;
-	void ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount ) override;
-
+	//void ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount ) override;
+	/// Shift num elements by shift ammount
+	virtual void MoveRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount) override;
+	/// Shuffle num elements fill gap by moving overritten ellements in.
+	virtual void ShuffleRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount) override;
 	void Grow() override; // just grow (very dumb grow = golden ratio)
 	void Grow(const size_t& newSize) override; //grow to specific size, copy all to front (dumb grow)
 	void Grow(const size_t& newSize, const size_t& frontPorch) override;
@@ -147,13 +150,13 @@ public:
 	void insertBlank(const size_t& index, size_t count = 1) override;
 
     /// C++ conform begin
-    TYPE* begin(const int64_t& offset = 0) override;
+    virtual Itr<TYPE> begin(const int64_t& offset = 0) override;
     /// C++ conform begin
-    const TYPE* begin(const int64_t& offset = 0) const override;
+	virtual Itr<const TYPE> begin(const int64_t& offset = 0) const override;
     /// C++ conform end
-    TYPE* end(const int64_t& offset = 0) override;
+	virtual Itr<TYPE> end(const int64_t& offset = 0) override;
     /// C++ conform end
-    const TYPE* end(const int64_t& offset = 0) const override;
+	virtual Itr<const TYPE> end(const int64_t& offset = 0) const override;
     
 private:
     /// destroy array resources
@@ -392,7 +395,7 @@ inline void Array<TYPE>::ShiftFront(const size_t& numShift)
 }
 
 template<class TYPE>
-inline void Array<TYPE>::ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount)
+inline void Array<TYPE>::MoveRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount)
 {
 	if (StartIndex >= Size())
 		return;
@@ -408,7 +411,7 @@ inline void Array<TYPE>::ShiftRange(size_t StartIndex, size_t numElements, const
 	if (ff < 0)
 		StartIndex += abs(ff);
 
-	TYPE* src = begin() + StartIndex;
+	TYPE* src = begin().Ptr() + StartIndex;
 	void* dst = src + shiftAmmount;
 	std::memmove(dst, src, numElements * sizeof(TYPE));
 
@@ -418,6 +421,12 @@ inline void Array<TYPE>::ShiftRange(size_t StartIndex, size_t numElements, const
 	
 	//clear gap
 	std::memset(src, 0, abs(shiftAmmount) * sizeof(TYPE));
+}
+
+template<class TYPE>
+inline void Array<TYPE>::ShuffleRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount)
+{
+	//TODO::
 }
 
 template<class TYPE>
@@ -450,11 +459,9 @@ inline void Array<TYPE>::Grow(const size_t& newCap, const size_t& frontPorch)
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::Trim() {
-	CopyRange cpy;
-	cpy.dstOffset = 0;
-	cpy.size = Size() * sizeof(TYPE);
-	cpy.src = begin();
-	Block()->GrowCopyMap(cpy.size, &cpy, 1);
+	CopyMap cpy = { Size() * sizeof(TYPE) };
+	cpy.PushRange({ 0,begin(),cpy.newSize });
+	Block()->GrowMap(cpy);
 	startElem = 0;
 
 }
@@ -472,7 +479,7 @@ Array<TYPE>::PushBack(const TYPE& elm) {
 		Grow();
     }
 	size++;
-	new (end()-1) TYPE(std::move(elm));
+	new (end().Ptr()-1) TYPE(std::move(elm));
 	//Back() = TYPE(elm);
     return Back();
 }
@@ -484,7 +491,7 @@ Array<TYPE>::PushBack(TYPE&& elm) {
 		Grow();
 	}
 	size++;
-	new (end()-1) TYPE(std::move(elm));
+	new (end().Ptr()-1) TYPE(std::move(elm));
 	//Back() = TYPE(std::move(elm));
 	//TYPE db = Back();
 	return Back();
@@ -595,7 +602,7 @@ Array<TYPE>::EraseRange(size_t index, size_t num) {
 	if (num == std::numeric_limits<size_t>::max() || index + num > Size())
 		num = Size() - index;
 	if (index + num < Size())
-		ShiftRange(index + num, Size(), -(int64_t)num);
+		MoveRange(index + num, Size(), -(int64_t)num);
 	size-=num;
 }
 
@@ -629,7 +636,7 @@ inline void Array<TYPE>::insertBlank(const size_t& index, size_t count)
 		if (shiftfwd && canShiftFwd || !shiftfwd && !canShiftBck) {
 			//shift forward
 			size_t ss = Size() - index;
-			TYPE* src = begin() + index;
+			TYPE* src = begin().Ptr() + index;
 			void* dst = src + count;
 			std::memmove(dst, src, ss * sizeof(TYPE));
 		}
@@ -644,19 +651,21 @@ inline void Array<TYPE>::insertBlank(const size_t& index, size_t count)
 		}		
 	}
 	else {
-		CopyRange copyMap[2];
+		
+
+		
 		size_t newSize = Size() + count;
+		CopyMap cpy = { newSize * sizeof(TYPE) };
 		size_t newFP = newSize / 4;
 		newSize += newFP * 3;
 
-		copyMap[0].dstOffset = sizeof(TYPE) * newFP;
-		copyMap[0].size = index * sizeof(TYPE);
-		copyMap[0].src = begin();
-		copyMap[1].dstOffset = (newFP + index + count) *sizeof(TYPE);
-		copyMap[1].size = (Size() - index) * sizeof(TYPE);
-		copyMap[1].src = begin()+index;
+		CopyRange cr1 = { sizeof(TYPE) * newFP ,begin() ,index * sizeof(TYPE) };
+		CopyRange cr2 = { (newFP + index + count) * sizeof(TYPE) ,begin().Ptr() + index ,(Size() - index) * sizeof(TYPE) };
 
-		Block()->GrowCopyMap(newSize * sizeof(TYPE), copyMap, 2);
+		cpy.PushRange(cr1);
+		cpy.PushRange(cr2);
+
+		Block()->GrowMap(cpy);
 		startElem = newFP;
 	}
 	TYPE* b = begin(index);
@@ -669,27 +678,27 @@ inline void Array<TYPE>::insertBlank(const size_t& index, size_t count)
 }
     
 //------------------------------------------------------------------------------
-template<class TYPE> TYPE*
-Array<TYPE>::begin(const int64_t& offset) {
-	return ((TYPE*)(Block()->memStart())) + startElem+offset;
+template<class TYPE> 
+Itr<TYPE> Array<TYPE>::begin(const int64_t& offset) {
+	return Itr<TYPE>((TYPE*)(Block()->memStart()) + startElem+offset);
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> const TYPE*
-Array<TYPE>::begin(const int64_t& offset) const {
-    return ((TYPE*)(Block()->memStart())) + startElem + offset;
+template<class TYPE>  
+Itr<const TYPE> Array<TYPE>::begin(const int64_t& offset) const {
+	return Itr<const TYPE>((TYPE*)(Block()->memStart()) + startElem + offset);
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> TYPE*
-Array<TYPE>::end(const int64_t& offset) {
-    return begin(offset) +size;
+template<class TYPE> 
+Itr<TYPE> Array<TYPE>::end(const int64_t& offset) {
+    return begin(offset + Size());
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> const TYPE*
-Array<TYPE>::end(const int64_t& offset) const {
-    return begin(offset) + size;
+template<class TYPE> 
+Itr<const TYPE> Array<TYPE>::end(const int64_t& offset) const {
+	return begin(offset + Size());
 }
 
 //------------------------------------------------------------------------------

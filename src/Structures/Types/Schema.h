@@ -30,6 +30,8 @@ public:
 
 	void Normalize();
 	bool Normalized() const;
+
+	Array<size_t> GetTableIndex(bool compressed = false);
 private:	
 	static inline bool IsFlat(const TypeDescr& t) { return !t.Derived() && !t.Sparse() && !t.Multiple(); };
 	static inline bool IsFixedMulti(const TypeDescr& t, const Constraint& c) { return !t.Derived() && t.Multiple() && c.Contains("FixedSize"); };
@@ -55,6 +57,7 @@ private:
 	Array<TypeDescr> Types;
 	//SparseArray<Darivation> Darivations
 	SparseArray<Constraint> Constraints;
+	SparseArray<Schema*> SubSchemas;
 };
 
 
@@ -113,41 +116,58 @@ inline void Schema::Normalize()
 				break; \
 		}
 
-	flatColumns = 0;
-	filt(flatColumns, IsFlat);
+	////Fixed Size
+	//flatColumns = 0;
+	//filt(flatColumns, IsFlat);
 
-	fixedMultiColumns = flatColumns; 
-	filtConst(fixedMultiColumns, IsFixedMulti);
+	//fixedMultiColumns = flatColumns; 
+	//filtConst(fixedMultiColumns, IsFixedMulti);
 
-	cachedDerivedColumns = fixedMultiColumns;
-	filt(cachedDerivedColumns, IsCached);
+	//cachedColumns = fixedMultiColumns;
+	//filt(cachedDerivedColumns, IsCached);
 
-	cachedDerivedFixedMultiColumns = cachedDerivedColumns;
-	filtConst(cachedDerivedFixedMultiColumns, IsCachedFixedMulti);
+	//cachedFixedMultiColumns = cachedDerivedColumns;
+	//filtConst(cachedDerivedFixedMultiColumns, IsCachedFixedMulti);
 
-	cachedDerivedSparseCcolumns = cachedDerivedFixedMultiColumns;
-	filt(cachedDerivedSparseCcolumns, IsCachedSparce);
+	//SchemaColumns = cachedDerivedColumns;
+	//filtConst(cachedDerivedFixedMultiColumns, IsCachedFixedMulti);
+	//
+	////nullable fixed size
+	//nullableColumns = fixedMultiColumns;
+	//filt(nullableColumns, IsNullable);
 
-	cachedDerivedMultiColumns = cachedDerivedSparseCcolumns;
-	filtConst(cachedDerivedMultiColumns, IsCachedMulti);
+	//cachedNullableColumns = nullableColumns;
+	//filtConst(nullableFixedMultiColumns, IsNullableFixedMulti);
 
-	derivedColumns = cachedDerivedMultiColumns;
-	filt(derivedColumns, IsUncached);
+	//nullableFixedMultiColumns = nullableColumns;
+	//filtConst(nullableFixedMultiColumns, IsNullableFixedMulti);
 
-	sparseColumns = derivedColumns;
-	filt(sparseColumns, IsSparce);
+	//cachedNullableFixedMultiColumns = nullableColumns;
+	//filtConst(nullableFixedMultiColumns, IsNullableFixedMulti);	
 
-	multiColumns = sparseColumns;
-	filtConst(multiColumns, IsMulti);
+	////sparse fixed size
+	//sparseColumns = derivedColumns;
+	//filt(sparseColumns, IsSparce);	
 
-	//multiColumns -= sparseColumns;
-	//sparseColumns -= derivedColumns;
-	//derivedColumns -= cachedDerivedMultiColumns;
-	//cachedDerivedMultiColumns -= cachedDerivedSparseCcolumns;
-	//cachedDerivedSparseCcolumns -= cachedDerivedFixedMultiColumns;
-	//cachedDerivedFixedMultiColumns -= cachedDerivedColumns;
-	//cachedDerivedColumns -= fixedMultiColumns;
-	//fixedMultiColumns -= flatColumns;
+	//cachedSparseColumns = cachedDerivedFixedMultiColumns;
+	//filt(cachedDerivedSparseCcolumns, IsCachedSparce);
+
+	//sparseFixedMultiColumns = nullableColumns;
+	//filtConst(nullableFixedMultiColumns, IsNullableFixedMulti);
+
+	//cachedSparseFixedMultiColumns = nullableColumns;
+	//filtConst(nullableFixedMultiColumns, IsNullableFixedMulti);
+	//
+	////dynamic size
+	//multiColumns = sparseColumns;
+	//filtConst(multiColumns, IsMulti);
+
+	//cachedDerivedMultiColumns = cachedDerivedSparseCcolumns;
+	//filtConst(cachedDerivedMultiColumns, IsCachedMulti);
+
+	////no size
+	//derivedColumns = cachedDerivedMultiColumns;
+	//filt(derivedColumns, IsUncached);
 
 }
 
@@ -164,4 +184,5 @@ bool Schema::Normalized() const
 
 	return multiColumns == Types.Size();
 }
+
 

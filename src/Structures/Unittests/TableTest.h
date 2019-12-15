@@ -10,6 +10,7 @@
 
 bool TestTable()
 {
+	Slice<int> x;
 
 	DBlock b(128);
 
@@ -35,7 +36,7 @@ bool TestTable()
 	pp1.Grow(8);
 	pps0 = pp0.Size();
 	pps1 = pp1.Size();
-	int* p = (int*)pp1.begin();
+	int* p = (int*)pp1.begin().Ptr();
 	p[0] = 5;
 	p[1] = 7;
 
@@ -75,24 +76,24 @@ bool TestTable()
 	p1.Grow(8);
 	ps0 = p0.Size();
 	ps1 = p1.Size();
-	int* pa = (int*)p1.begin();
+	int* pa = (int*)p1.begin().Ptr();
 	pa[0] = 5;
 	pa[1] = 7;
 
 	p0.Grow(8);
 	ps0 = p0.Size();
 	ps1 = p1.Size();
-	pa = (int*)p0.begin();
+	pa = (int*)p0.begin().Ptr();
 	pa[0] = 3;
 	pa[1] = 4;
 
-	pa = (int*)p1.begin();
-	int x = pa[0];
-	int y = pa[1];
+	pa = (int*)p1.begin().Ptr();
+	int xz = pa[0];
+	int yz = pa[1];
 
-	pa = (int*)p0.begin();
-	x = pa[0];
-	y = pa[1];
+	pa = (int*)p0.begin().Ptr();
+	xz = pa[0];
+	yz = pa[1];
 
 	return true;
 }
