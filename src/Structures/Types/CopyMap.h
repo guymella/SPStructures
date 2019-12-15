@@ -37,7 +37,8 @@ inline void CopyMap::CopyTo(uint8_t* dst) const
 {
 	const CopyRange* end = ranges + RangeCount;
 	for (const CopyRange* r = ranges; r < end; r++)
-		memcpy(dst + r->dstOffset, r->src, r->size);
+		if (r->src)
+			memcpy(dst + r->dstOffset, r->src, r->size);
 }
 
 inline void CopyMap::MoveTo(uint8_t* dst) const 

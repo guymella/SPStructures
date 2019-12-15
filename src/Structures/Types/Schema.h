@@ -56,8 +56,8 @@ private:
 	Array<KeyString> Labels;
 	Array<TypeDescr> Types;
 	//SparseArray<Darivation> Darivations
-	SparseArray<Constraint> Constraints;
-	SparseArray<Schema*> SubSchemas;
+	//SparseArray<Constraint> Constraints;
+	//SparseArray<Schema*> SubSchemas;
 };
 
 

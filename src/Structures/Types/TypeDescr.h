@@ -4,10 +4,13 @@
 
 #include "Structures/Types.h"
 
+#ifndef Included_TypeDescr_H
+#define Included_TypeDescr_H
 
 struct TypeDescr {
 	baseTypes type = baseTypes::Void;
 	uint8_t flags = 0;
+	bool operator==(const TypeDescr& rhs) const;
 	bool Nullable() const { return (flags) & 1U; };
 	bool Multiple() const { return (flags >> 1) & 1U; };
 	bool Sparse() const { return (flags >> 2) & 1U; };
@@ -28,6 +31,11 @@ struct TypeDescr {
 	static uint8_t setFLags(bool nullable, bool Multiple, bool Sparse, bool Constrained, bool Derived, bool Cached, bool Subscribable);
 };
 
+inline bool TypeDescr::operator==(const TypeDescr& rhs) const
+{
+	return (type == rhs.type && flags == rhs.flags);
+}
+
 uint8_t TypeDescr::setFLags(bool nullable, bool Multiple, bool Sparse, bool Constrained, bool Derived, bool Cached, bool Subscribable)
 {
 	return ((uint8_t)nullable)
@@ -38,3 +46,5 @@ uint8_t TypeDescr::setFLags(bool nullable, bool Multiple, bool Sparse, bool Cons
 		| ((uint8_t)Cached << 6)
 		| ((uint8_t)Multiple << 7);
 }
+
+#endif //Keys

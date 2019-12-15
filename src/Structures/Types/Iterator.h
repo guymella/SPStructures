@@ -105,6 +105,22 @@ inline void Itr<TYPE>::operator=(const Itr<TYPE>& rhs)
 }
 
 template<typename TYPE>
+inline bool Itr<TYPE>::operator==(const Itr<TYPE>& rhs) const
+{
+	if (isItr && rhs.isItr)
+		return i == rhs.i;
+	if (!isItr && !rhs.isItr)
+		return p == rhs.p;
+	return false;
+}
+
+template<typename TYPE>
+inline bool Itr<TYPE>::operator!=(const Itr<TYPE>& rhs) const
+{
+	return !((*this) == rhs);
+}
+
+template<typename TYPE>
 inline Itr<TYPE>& Itr<TYPE>::operator++()
 {
 	if (isItr)

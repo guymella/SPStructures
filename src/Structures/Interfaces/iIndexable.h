@@ -28,14 +28,14 @@ public:
 	virtual void MoveRange(size_t startIndex, size_t numElements, const int64_t& shiftAmmount);
 	virtual void MoveRangeLeft(size_t startIndex, size_t numElements, const size_t& shiftAmmount) = 0;
 	virtual void MoveRangeRight(size_t startIndex, size_t numElements, const size_t& shiftAmmount) = 0;
-	/// Shuffle num elements fill gap by moving overritten ellements in.
-	virtual void ShuffleRange(size_t startIndex, size_t numElements, const int64_t& shiftAmmount);
-	virtual void ShuffleRangeLeft(size_t startIndex, size_t numElements, const size_t& shiftAmmount) = 0;
-	virtual void ShuffleRangeRight(size_t startIndex, size_t numElements, const size_t& shiftAmmount) = 0;
-	/// Shuffle num elements fill gap by moving overritten ellements in.
-	virtual void Shift(const int64_t& shiftAmmount);
-	virtual void ShiftLeft(const size_t& shiftAmmount) = 0;
-	virtual void ShiftRight(const size_t& shiftAmmount) = 0;
+	 //Shuffle num elements fill gap by moving overritten ellements in.
+	//virtual void ShuffleRange(size_t startIndex, size_t numElements, const int64_t& shiftAmmount);
+	//virtual void ShuffleRangeLeft(size_t startIndex, size_t numElements, const size_t& shiftAmmount) = 0;
+	//virtual void ShuffleRangeRight(size_t startIndex, size_t numElements, const size_t& shiftAmmount) = 0;
+	 //Shuffle num elements fill gap by moving overritten ellements in.
+	//virtual void Shift(const int64_t& shiftAmmount);
+	//virtual void ShiftLeft(const size_t& shiftAmmount) = 0;
+	//virtual void ShiftRight(const size_t& shiftAmmount) = 0;
 	//CLear The Array
 	virtual void Clear() = 0;
 };
@@ -96,23 +96,23 @@ inline void iREditable<TYPE>::MoveRange(size_t startIndex, size_t numElements, c
 	else
 		MoveRangeLeft(startIndex, numElements, -shiftAmmount);
 }
-
-template<typename TYPE>
-inline void iREditable<TYPE>::ShuffleRange(size_t startIndex, size_t numElements, const int64_t& shiftAmmount)
-{
-	if (shiftAmmount > 0)
-		ShuffleRangeRight(startIndex, numElements, shiftAmmount);
-	else
-		ShuffleRangeLeft(startIndex, numElements, -shiftAmmount);
-}
-
-template<typename TYPE>
-inline void iREditable<TYPE>::Shift(const int64_t& shiftAmmount)
-{
-	if (shiftAmmount > 0)
-		ShiftRight(shiftAmmount);
-	else
-		ShiftLeft(-shiftAmmount);
-}
+//
+//template<typename TYPE>
+//inline void iREditable<TYPE>::ShuffleRange(size_t startIndex, size_t numElements, const int64_t& shiftAmmount)
+//{
+//	if (shiftAmmount > 0)
+//		ShuffleRangeRight(startIndex, numElements, shiftAmmount);
+//	else
+//		ShuffleRangeLeft(startIndex, numElements, -shiftAmmount);
+//}
+//
+//template<typename TYPE>
+//inline void iREditable<TYPE>::Shift(const int64_t& shiftAmmount)
+//{
+//	if (shiftAmmount > 0)
+//		ShiftRight(shiftAmmount);
+//	else
+//		ShiftLeft(-shiftAmmount);
+//}
 
 

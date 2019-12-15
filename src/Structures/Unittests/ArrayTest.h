@@ -151,6 +151,8 @@ bool testArray() {
 	array2.Erase(0);
 	CHECK(array2.Size() == 7);
 	CHECK(array2[0] == 0);
+	int dbg1 = array2[1];
+	int dbg2 = array2[2];
 	CHECK(array2[1] == 7);
 	CHECK(array2[2] == 1);
 	CHECK(array2[3] == 8);
@@ -253,23 +255,23 @@ bool testArray() {
 	array2.PushBack(7);
 	array2.PushBack(9);
 	array2.PushBack(11);
-	bool allOdd = std::all_of(array2.begin(), array2.end(), [](int i) { return i % 2 == 1; });
+	bool allOdd = std::all_of(array2.begin().Ptr(), array2.end().Ptr(), [](int i) { return i % 2 == 1; });
 	CHECK(allOdd);
-	bool anyEven = std::any_of(array2.begin(), array2.end(), [](int i) { return i % 2 == 0; });
+	bool anyEven = std::any_of(array2.begin().Ptr(), array2.end().Ptr(), [](int i) { return i % 2 == 0; });
 	CHECK(!anyEven);
 	array2[2] = 2;
-	allOdd = std::all_of(array2.begin(), array2.end(), [](int i) { return i % 2 == 1; });
+	allOdd = std::all_of(array2.begin().Ptr(), array2.end().Ptr(), [](int i) { return i % 2 == 1; });
 	CHECK(!allOdd);
-	anyEven = std::any_of(array2.begin(), array2.end(), [](int i) { return i % 2 == 0; });
+	anyEven = std::any_of(array2.begin().Ptr(), array2.end().Ptr(), [](int i) { return i % 2 == 0; });
 	CHECK(anyEven);
-	std::reverse(array2.begin(), array2.end());
+	std::reverse(array2.begin().Ptr(), array2.end().Ptr());
 	CHECK(array2[0] == 11);
 	CHECK(array2[1] == 9);
 	CHECK(array2[2] == 7);
 	CHECK(array2[3] == 2);
 	CHECK(array2[4] == 3);
 	CHECK(array2[5] == 1);
-	std::sort(array2.begin(), array2.end());
+	std::sort(array2.begin().Ptr(), array2.end().Ptr());
 	CHECK(array2[0] == 1);
 	CHECK(array2[1] == 2);
 	CHECK(array2[2] == 3);
@@ -284,7 +286,7 @@ bool testArray() {
 	//CHECK(array2.FindIndexLinear(11) == 5);
 
 	// reverse sort
-	std::sort(array2.begin(), array2.end(), [](int a, int b) {
+	std::sort(array2.begin().Ptr(), array2.end().Ptr(), [](int a, int b) {
 		return b < a;
 		});
 	CHECK(array2[0] == 11);
@@ -368,8 +370,8 @@ bool testArray() {
 	CHECK(slice[1] == 5);
 	CHECK(slice[2] == 6);
 	CHECK(slice[3] == 7);
-	CHECK(slice.begin() == &array7[3]);
-	CHECK(slice.end() == &array7[7]);
+	CHECK(slice.begin().Ptr() == &array7[3]);
+	CHECK(slice.end().Ptr() == &array7[7]);
 	slice[0] = 123;
 	CHECK(array7[3] == 123);
 
@@ -409,8 +411,8 @@ bool testArray() {
 	CHECK(smartslice[1] == 5);
 	CHECK(smartslice[2] == 6);
 	CHECK(smartslice[3] == 7);
-	CHECK(smartslice.begin() == &array8[3]);
-	CHECK(smartslice.end() == &array8[7]);
+	CHECK(smartslice.begin().Ptr() == &array8[3]);
+	CHECK(smartslice.end().Ptr() == &array8[7]);
 	smartslice[0] = 123;
 	CHECK(array8[3] == 123);
 	smartslice.PushBack(124);
@@ -422,8 +424,8 @@ bool testArray() {
 	CHECK(smartslice[2] == 6);
 	CHECK(smartslice[3] == 7);
 	CHECK(smartslice[4] == 124);
-	CHECK(smartslice.begin() == &array8[3]);
-	CHECK(smartslice.end() == &array8[8]);
+	CHECK(smartslice.begin().Ptr() == &array8[3]);
+	CHECK(smartslice.end().Ptr() == &array8[8]);
 	
 	// fixed capacity
 	//Array<int> array8;

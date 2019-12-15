@@ -15,7 +15,7 @@
 template <typename TYPE>
 class TrieNode : public iTrieNode<TYPE> {
 public:
-	TrieNode() {};
+	TrieNode() { nodes = NULL; };
 	TrieNode(iDArray<TrieNode<TYPE>>* nodeArray) : nodes(nodeArray) {};
 	TrieNode(const TrieNode<TYPE>& rhs);
 	TrieNode(TrieNode<TYPE>&& rhs);
@@ -38,7 +38,7 @@ private:
 	Array<KeyString> keys;
 	SparseArray<TYPE> values;
 	SparseArray<size_t> nodeRefs;
-	iDArray<TrieNode<TYPE>>* nodes;
+	iDArray<TrieNode<TYPE>>* nodes = NULL;
 };
 
 template<typename TYPE>

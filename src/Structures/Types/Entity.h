@@ -15,5 +15,5 @@ private:
 
 Entity::Entity(Schema* SchemaPointer) : schemaPtr(SchemaPointer)
 {
-	data.GetIndex() = schemaPtr->GetTableIndex();
+	//data.GetIndex() = schemaPtr->GetTableIndex();
 }

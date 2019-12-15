@@ -23,21 +23,22 @@ public:
 	virtual TYPE& operator[](size_t index) override;
 	/// read-only access to indexed item
 	virtual const TYPE& operator[](size_t index) const override;
+	virtual bool operator==(const iArray<TYPE>& rhs) const;
 	//virtual iArray& operator<<(size_t amount);
 	//virtual iArray& operator>>(size_t amount);
 	virtual void MoveRangeLeft(size_t startIndex, size_t numElements, const size_t& shiftAmmount) override;
 	virtual void MoveRangeRight(size_t startIndex, size_t numElements, const size_t& shiftAmmount) override;
 	/// Shuffle num elements fill gap by moving overritten ellements in.
-	virtual void ShuffleRangeLeft(size_t startIndex, size_t numElements, const size_t& shiftAmmount) override;
+	//virtual void ShuffleRangeLeft(size_t startIndex, size_t numElements, const size_t& shiftAmmount) override;
 	/// Shuffle num elements fill gap by moving overritten ellements in.
-	virtual void ShuffleRangeRight(size_t startIndex, size_t numElements, const size_t& shiftAmmount) override;
+	//virtual void ShuffleRangeRight(size_t startIndex, size_t numElements, const size_t& shiftAmmount) override;
 	/// Shift Elemnts Left with wrap
-	virtual void ShiftLeft(const size_t& shiftAmmount) override;
+	//virtual void ShiftLeft(const size_t& shiftAmmount) override;
 	///Shift ELements right with wrap
-	virtual void ShiftRight(const size_t& shiftAmmount) override;
+	//virtual void ShiftRight(const size_t& shiftAmmount) override;
 	//CLear The Array
 	virtual void Clear() override;
-	/// find element index with slow linear search, return InvalidIndex if not found
+	/// find element index with slow linear search, return Size() if not found
 	virtual size_t FindFirstIndexOf(const TYPE& elm, size_t startIndex = 0, size_t endIndex = std::numeric_limits<size_t>::max()) const override;
 };
 
@@ -139,9 +140,20 @@ iArray<TYPE>::operator[](size_t index) const {
 }
 
 template<typename TYPE>
+inline bool iArray<TYPE>::operator==(const iArray<TYPE>& rhs) const
+{
+	if (rhs.Size() != Size())
+		return false;
+	for (size_t i = 0; i < Size(); i++)
+		if (!(rhs[i] == (*this)[i]))
+			return false;
+	return true;
+}
+
+template<typename TYPE>
 inline void iArray<TYPE>::MoveRangeLeft(size_t startIndex, size_t numElements, const size_t& shiftAmount)
 {
-
+	//TODO:: use Block moverange
 	if ((int64_t)startIndex - shiftAmount < 0)
 		startIndex += shiftAmount - startIndex;
 	if (startIndex > Size())//will not Change this array
@@ -149,12 +161,13 @@ inline void iArray<TYPE>::MoveRangeLeft(size_t startIndex, size_t numElements, c
 	if (startIndex + numElements > Size())
 		numElements = Size() - startIndex; // rest of array
 
-	memmove(begin(startIndex - shiftAmount),begin(startIndex),shiftAmount*sizeof(TYPE));
+	memmove(begin(startIndex - shiftAmount),begin(startIndex), numElements *sizeof(TYPE));
 }
-
+//
 template<typename TYPE>
 inline void iArray<TYPE>::MoveRangeRight(size_t startIndex, size_t numElements, const size_t& shiftAmount)
 {
+	//TODO:: use Block moverange
 	if (startIndex + shiftAmount > Size())
 		return;
 	if (startIndex + numElements + shiftAmount > Size())
@@ -163,54 +176,54 @@ inline void iArray<TYPE>::MoveRangeRight(size_t startIndex, size_t numElements, 
 	memmove(begin(startIndex + shiftAmount), begin(startIndex), shiftAmount);
 
 }
-
-template<typename TYPE>
-inline void iArray<TYPE>::ShuffleRangeLeft(size_t startIndex, size_t numElements, const size_t& shiftAmount)
-{
-
-	size_t shuffleStart = (startIndex > shiftAmount) ? startIndex - shiftAmount : 0;
-	size_t shuffleNum = startIndex - shuffleStart;
-	size_t shuffleShift = numElements;
-
-	if (shuffleStart + shuffleShift > Size()) // will not change this array
-		return;
-
-	if (shuffleStart + shuffleNum + shuffleShift > Size())
-		shuffleNum -= (shuffleStart + shuffleNum + shuffleShift) - Size();
-
-    void* tmp = std::malloc(shuffleNum*sizeof(TYPE));
-	std::memcpy(tmp, begin(shuffleStart), shuffleNum * sizeof(TYPE));
-
-	MoveRangeLeft(startIndex, numElements, shiftAmount);
-	
-	std::memcpy(begin(shuffleStart + shuffleShift), tmp, shuffleNum * sizeof(TYPE));
-	std::free(tmp);
-}
-
-template<typename TYPE>
-inline void iArray<TYPE>::ShuffleRangeRight(size_t startIndex, size_t numElements, const size_t& shiftAmount)
-{
-	if (startIndex > Size())
-		return;
-
-	size_t shuffleStart = startIndex + numElements;	
-	size_t shuffleNum = shiftAmount;
-	size_t shuffleShift = numElements;
-
-	if (shuffleStart > Size()) // nothing to shuffle
-		return MoveRangeRight(startIndex, numElements, shiftAmount);
-		
-	if (shuffleStart + shuffleNum > Size())
-		shuffleNum = Size() - shuffleStart;
-
-	void* tmp = std::malloc(shuffleNum * sizeof(TYPE));
-	std::memcpy(tmp, begin(shuffleStart), shuffleNum * sizeof(TYPE));
-
-	MoveRangeRight(startIndex, numElements, shiftAmount);
-
-	std::memcpy(begin(startIndex), tmp, shuffleNum * sizeof(TYPE));
-	std::free(tmp);
-}
+//
+//template<typename TYPE>
+//inline void iArray<TYPE>::ShuffleRangeLeft(size_t startIndex, size_t numElements, const size_t& shiftAmount)
+//{
+//
+//	size_t shuffleStart = (startIndex > shiftAmount) ? startIndex - shiftAmount : 0;
+//	size_t shuffleNum = startIndex - shuffleStart;
+//	size_t shuffleShift = numElements;
+//
+//	if (shuffleStart + shuffleShift > Size()) // will not change this array
+//		return;
+//
+//	if (shuffleStart + shuffleNum + shuffleShift > Size())
+//		shuffleNum -= (shuffleStart + shuffleNum + shuffleShift) - Size();
+//
+//    void* tmp = std::malloc(shuffleNum*sizeof(TYPE));
+//	std::memcpy(tmp, begin(shuffleStart), shuffleNum * sizeof(TYPE));
+//
+//	MoveRangeLeft(startIndex, numElements, shiftAmount);
+//	
+//	std::memcpy(begin(shuffleStart + shuffleShift), tmp, shuffleNum * sizeof(TYPE));
+//	std::free(tmp);
+//}
+//
+//template<typename TYPE>
+//inline void iArray<TYPE>::ShuffleRangeRight(size_t startIndex, size_t numElements, const size_t& shiftAmount)
+//{
+//	if (startIndex > Size())
+//		return;
+//
+//	size_t shuffleStart = startIndex + numElements;	
+//	size_t shuffleNum = shiftAmount;
+//	size_t shuffleShift = numElements;
+//
+//	if (shuffleStart > Size()) // nothing to shuffle
+//		return MoveRangeRight(startIndex, numElements, shiftAmount);
+//		
+//	if (shuffleStart + shuffleNum > Size())
+//		shuffleNum = Size() - shuffleStart;
+//
+//	void* tmp = std::malloc(shuffleNum * sizeof(TYPE));
+//	std::memcpy(tmp, begin(shuffleStart), shuffleNum * sizeof(TYPE));
+//
+//	MoveRangeRight(startIndex, numElements, shiftAmount);
+//
+//	std::memcpy(begin(startIndex), tmp, shuffleNum * sizeof(TYPE));
+//	std::free(tmp);
+//}
 
 
 
@@ -221,7 +234,7 @@ inline size_t iArray<TYPE>::FindFirstIndexOf(const TYPE& elm, size_t startIndex,
 	for (const TYPE* b = begin(startIndex); b < e; b++)
 		if (elm == *b)
 			return b - begin();
-	return size_t();
+	return Size();
 }
 
 //------------------------------------------------------------------------------
@@ -292,17 +305,17 @@ inline void iDArray<TYPE>::Clear()
 	EraseRange(0, Size());
 }
 
-template<typename TYPE>
-inline void iArray<TYPE>::ShiftLeft(const size_t& shiftAmmount)
-{
-	ShuffleRangeLeft(shiftAmmount, Size() - shiftAmmount, shiftAmmount);
-}
-
-template<typename TYPE>
-inline void iArray<TYPE>::ShiftRight(const size_t& shiftAmmount)
-{
-	ShuffleRangeRight(0, Size() - shiftAmmount, shiftAmmount);
-}
+//template<typename TYPE>
+//inline void iArray<TYPE>::ShiftLeft(const size_t& shiftAmmount)
+//{
+//	ShuffleRangeLeft(shiftAmmount, Size() - shiftAmmount, shiftAmmount);
+//}
+//
+//template<typename TYPE>
+//inline void iArray<TYPE>::ShiftRight(const size_t& shiftAmmount)
+//{
+//	ShuffleRangeRight(0, Size() - shiftAmmount, shiftAmmount);
+//}
 
 template<typename TYPE>
 inline void iArray<TYPE>::Clear()

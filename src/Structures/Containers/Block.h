@@ -39,9 +39,10 @@ public:
 	
 	inline void InitializeBlock(const size_t& size);
 	inline bool Initialized() const { return blockStart; };	
-
 	/// move-assignment operator (same capacity and size)
-	void operator=(DBlock&& rhs) { move(std::move(rhs)); };	
+	void operator=(const DBlock& rhs) { copy(rhs); };
+	/// move-assignment operator (same capacity and size)
+	void operator=(DBlock&& rhs) noexcept { move(std::move(rhs)); };
 	
 	virtual void GrowMap(const CopyMap& map) override;
 	virtual size_t Capacity() const override { return size; };
@@ -86,8 +87,10 @@ inline void DBlock::GrowMap(const CopyMap& map)
 {
 	void* oldBlock = memStart();
 	InitializeBlock(map.newSize);
-	map.CopyTo((uint8_t*)memStart());	
-	free(oldBlock);
+	if (oldBlock) {
+		map.CopyTo((uint8_t*)memStart());
+		free(oldBlock);
+	}
 }
 
 

@@ -77,19 +77,30 @@ public:
     /// read-only access to last element (must exist)
     const TYPE& Back() const override { return Values().Back(); };
    
-   	void ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount ) override;
-
+	virtual void MoveRangeLeft(size_t startIndex, size_t numElements, const size_t& shiftAmmount) override;
+	virtual void MoveRangeRight(size_t startIndex, size_t numElements, const size_t& shiftAmmount) override;
+	///// Shuffle num elements fill gap by moving overritten ellements in.
+	//virtual void ShuffleRangeLeft(size_t startIndex, size_t numElements, const size_t& shiftAmmount) override;
+	///// Shuffle num elements fill gap by moving overritten ellements in.
+	//virtual void ShuffleRangeRight(size_t startIndex, size_t numElements, const size_t& shiftAmmount) override;
+	///// Shift Elemnts Left with wrap
+	//virtual void ShiftLeft(const size_t& shiftAmmount) override;
+	/////Shift ELements right with wrap
+	//virtual void ShiftRight(const size_t& shiftAmmount) override;
+	/// find element index with slow linear search, return InvalidIndex if not found
+	virtual size_t FindFirstIndexOf(const TYPE& elm, size_t startIndex = 0, size_t endIndex = std::numeric_limits<size_t>::max()) const override;
+	size_t FirstEmptyIndex() const;
 	/// clear the array (deletes elements, keeps capacity)
     void Clear(); //override TODO:: override after moving to iEditable
     
     /// copy-add element to back of array
-    TYPE& PushBack(const TYPE& elm);
+    virtual TYPE& PushBack(const TYPE& elm) override;
     /// move-add element to back of array
-    TYPE& PushBack(TYPE&& elm);
+	virtual TYPE& PushBack(TYPE&& elm) override;
 	/// copy-add element to back of array
-	TYPE& PushFront(const TYPE& elm);
+	virtual TYPE& PushFront(const TYPE& elm) override;
 	/// move-add element to back of array
-	TYPE& PushFront(TYPE&& elm);
+	virtual TYPE& PushFront(TYPE&& elm) override;
     /// construct-add new element at back of array
  //   template<class... ARGS> TYPE& PushBack(ARGS&&... args);
 	//template<class... ARGS> TYPE& PushFront(ARGS&&... args);
@@ -114,13 +125,13 @@ public:
 	void insertBlank(const size_t& index, size_t count = 1) override;
 
     /// C++ conform begin
-	TYPE* begin(const int64_t& offset = 0) override;
+	Itr<TYPE> begin(const int64_t& offset = 0) override;
     /// C++ conform begin
-	const TYPE* begin(const int64_t& offset = 0) const override;
+	Itr<const TYPE> begin(const int64_t& offset = 0) const override;
     /// C++ conform end
-	TYPE* end(const int64_t& offset = 0) override;
+	Itr<TYPE> end(const int64_t& offset = 0) override;
     /// C++ conform end
-    const TYPE* end(const int64_t& offset = 0) const override;
+	Itr<const TYPE> end(const int64_t& offset = 0) const override;
     
 	const TYPE* Exists(size_t index) const override;
 	TYPE* Exists(size_t index) override;
@@ -199,35 +210,84 @@ inline const TYPE& SparseArray<TYPE>::operator[](size_t index) const
 }
 
 template<class TYPE>
-inline void SparseArray<TYPE>::ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount)
+inline void SparseArray<TYPE>::MoveRangeLeft(size_t startIndex, size_t numElements, const size_t& shiftAmount)
 {
-	size_t endIndex = StartIndex + numElements;
-	size_t DeleteStart = StartIndex + shiftAmmount;
-	size_t DeleteEnd = endIndex + shiftAmmount;
+	size_t delB = FindIndex(startIndex - shiftAmount);
+	size_t delNum = FindIndex(startIndex) - delB;
 
-	if (shiftAmmount > 0 && shiftAmmount < (int64_t)numElements)
-		DeleteStart = endIndex;
-	else if (shiftAmmount < 0 && -shiftAmmount < (int64_t)numElements)
-		DeleteEnd = StartIndex;
+	size_t e = FindIndex(startIndex + numElements);
+	for (size_t i = FindIndex(startIndex); i < e; i++)
+		Indexes()[i] -= shiftAmount;
 
+	Indexes().EraseRange(delB, delNum);
+	Values().EraseRange(delB, delNum);
 
+}
 
-	for (size_t i = 0; i < Indexes().Size(); i++) {
-		size_t& ii = Indexes()[i];
-		if (ii < StartIndex && ii < DeleteStart) //skip
-			continue;
-		if (ii >= DeleteStart && ii < DeleteEnd) {//delete; should be overidden by shift
-			Indexes().Erase(i);
-			Values().Erase(i);
-			i--;
-			continue;
-		}
-		if (ii >= StartIndex && ii < endIndex)//do the shift
-			ii += shiftAmmount;
+template<class TYPE>
+inline void SparseArray<TYPE>::MoveRangeRight(size_t startIndex, size_t numElements, const size_t& shiftAmount)
+{
+	size_t delB = FindIndex(startIndex + numElements);
+	size_t delNum = FindIndex(startIndex + numElements + shiftAmount) - delB;
 
-		if (ii > endIndex&& ii > DeleteEnd)
-			break;
-	}
+	size_t e = FindIndex(startIndex + numElements);
+	for (size_t i = FindIndex(startIndex); i < e; i++)
+		Indexes()[i] += shiftAmount;
+
+	Indexes().EraseRange(delB, delNum);
+	Values().EraseRange(delB, delNum);
+}
+
+//template<class TYPE>
+//inline void SparseArray<TYPE>::ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount)
+//{
+//	size_t endIndex = StartIndex + numElements;
+//	size_t DeleteStart = StartIndex + shiftAmmount;
+//	size_t DeleteEnd = endIndex + shiftAmmount;
+//
+//	if (shiftAmmount > 0 && shiftAmmount < (int64_t)numElements)
+//		DeleteStart = endIndex;
+//	else if (shiftAmmount < 0 && -shiftAmmount < (int64_t)numElements)
+//		DeleteEnd = StartIndex;
+//
+//
+//
+//	for (size_t i = 0; i < Indexes().Size(); i++) {
+//		size_t& ii = Indexes()[i];
+//		if (ii < StartIndex && ii < DeleteStart) //skip
+//			continue;
+//		if (ii >= DeleteStart && ii < DeleteEnd) {//delete; should be overidden by shift
+//			Indexes().Erase(i);
+//			Values().Erase(i);
+//			i--;
+//			continue;
+//		}
+//		if (ii >= StartIndex && ii < endIndex)//do the shift
+//			ii += shiftAmmount;
+//
+//		if (ii > endIndex&& ii > DeleteEnd)
+//			break;
+//	}
+//}
+
+template<class TYPE>
+inline size_t SparseArray<TYPE>::FindFirstIndexOf(const TYPE& elm, size_t startIndex, size_t endIndex) const
+{
+	size_t i = Values().FindFirstIndexOf(elm, FindIndex(startIndex), FindIndex(endIndex));
+	if (i < Values().Size())
+		return Indexes()[i];
+	if (elm == default)
+		return FirstEmptyIndex();
+	return Size();
+}
+
+template<class TYPE>
+inline size_t SparseArray<TYPE>::FirstEmptyIndex() const
+{
+	for (size_t i = 0; i < Size(); i++)
+		if (i != Indexes()[i])
+			return i;
+	return Size();
 }
 
 template<class TYPE>
@@ -352,25 +412,25 @@ inline void SparseArray<TYPE>::insertBlank(const size_t& index, size_t count)
 		Indexes()[i] += count;
 }
 template<class TYPE>
-inline TYPE* SparseArray<TYPE>::begin(const int64_t& offset)
+inline Itr<TYPE> SparseArray<TYPE>::begin(const int64_t& offset)
 {
 	return (Values().begin(FindIndex(offset)));
 }
 
 template<class TYPE>
-inline const TYPE* SparseArray<TYPE>::begin(const int64_t& offset) const
+inline Itr<const TYPE> SparseArray<TYPE>::begin(const int64_t& offset) const
 {
 	return (Values().begin(FindIndex(offset)));
 }
 
 template<class TYPE>
-inline TYPE* SparseArray<TYPE>::end(const int64_t& offset)
+inline Itr<TYPE> SparseArray<TYPE>::end(const int64_t& offset)
 {
 	return (Values().end(FindIndex(offset)));
 }
 
 template<class TYPE>
-inline const TYPE* SparseArray<TYPE>::end(const int64_t& offset) const
+inline Itr<const TYPE> SparseArray<TYPE>::end(const int64_t& offset) const
 {
 	return (Values().end(FindIndex(offset)));
 }

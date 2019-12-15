@@ -106,10 +106,10 @@ public:
 	void ShiftBack(const size_t& numShift) override; //free up spare without realloc
 	void ShiftFront(const size_t& numShift) override;
 	//void ShiftRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount ) override;
-	/// Shift num elements by shift ammount
+	/*/// Shift num elements by shift ammount
 	virtual void MoveRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount) override;
 	/// Shuffle num elements fill gap by moving overritten ellements in.
-	virtual void ShuffleRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount) override;
+	virtual void ShuffleRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount) override;*/
 	void Grow() override; // just grow (very dumb grow = golden ratio)
 	void Grow(const size_t& newSize) override; //grow to specific size, copy all to front (dumb grow)
 	void Grow(const size_t& newSize, const size_t& frontPorch) override;
@@ -394,40 +394,40 @@ inline void Array<TYPE>::ShiftFront(const size_t& numShift)
 	//TODO::
 }
 
-template<class TYPE>
-inline void Array<TYPE>::MoveRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount)
-{
-	if (StartIndex >= Size())
-		return;
-
-	if (StartIndex + numElements > Size())
-		numElements = Size() - StartIndex;
-
-	int64_t ff = StartIndex + numElements + shiftAmmount;
-	if (ff > (int64_t)Size())
-		numElements -= ff - Size();
-
-	ff = StartIndex + shiftAmmount;
-	if (ff < 0)
-		StartIndex += abs(ff);
-
-	TYPE* src = begin().Ptr() + StartIndex;
-	void* dst = src + shiftAmmount;
-	std::memmove(dst, src, numElements * sizeof(TYPE));
-
-	if (shiftAmmount < 0) {
-		src += numElements + shiftAmmount;
-	}
-	
-	//clear gap
-	std::memset(src, 0, abs(shiftAmmount) * sizeof(TYPE));
-}
-
-template<class TYPE>
-inline void Array<TYPE>::ShuffleRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount)
-{
-	//TODO::
-}
+//template<class TYPE>
+//inline void Array<TYPE>::MoveRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount)
+//{
+//	if (StartIndex >= Size())
+//		return;
+//
+//	if (StartIndex + numElements > Size())
+//		numElements = Size() - StartIndex;
+//
+//	int64_t ff = StartIndex + numElements + shiftAmmount;
+//	if (ff > (int64_t)Size())
+//		numElements -= ff - Size();
+//
+//	ff = StartIndex + shiftAmmount;
+//	if (ff < 0)
+//		StartIndex += abs(ff);
+//
+//	TYPE* src = begin().Ptr() + StartIndex;
+//	void* dst = src + shiftAmmount;
+//	std::memmove(dst, src, numElements * sizeof(TYPE));
+//
+//	if (shiftAmmount < 0) {
+//		src += numElements + shiftAmmount;
+//	}
+//	
+//	//clear gap
+//	std::memset(src, 0, abs(shiftAmmount) * sizeof(TYPE));
+//}
+//
+//template<class TYPE>
+//inline void Array<TYPE>::ShuffleRange(size_t StartIndex, size_t numElements, const int64_t& shiftAmmount)
+//{
+//	//TODO::
+//}
 
 template<class TYPE>
 inline void Array<TYPE>::Grow()
@@ -654,12 +654,13 @@ inline void Array<TYPE>::insertBlank(const size_t& index, size_t count)
 		
 
 		
-		size_t newSize = Size() + count;
-		CopyMap cpy = { newSize * sizeof(TYPE) };
+		size_t newSize = Size() + count;		
 		size_t newFP = newSize / 4;
 		newSize += newFP * 3;
 
-		CopyRange cr1 = { sizeof(TYPE) * newFP ,begin() ,index * sizeof(TYPE) };
+		CopyMap cpy = { newSize * sizeof(TYPE) };
+
+		CopyRange cr1 = { sizeof(TYPE) * newFP ,begin().Ptr() ,index * sizeof(TYPE) };
 		CopyRange cr2 = { (newFP + index + count) * sizeof(TYPE) ,begin().Ptr() + index ,(Size() - index) * sizeof(TYPE) };
 
 		cpy.PushRange(cr1);
@@ -668,7 +669,7 @@ inline void Array<TYPE>::insertBlank(const size_t& index, size_t count)
 		Block()->GrowMap(cpy);
 		startElem = newFP;
 	}
-	TYPE* b = begin(index);
+	TYPE* b = begin(index).Ptr();
 	for (size_t i = 0; i < count; i++) {
 		new (b) TYPE();
 		b++;

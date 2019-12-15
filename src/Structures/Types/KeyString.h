@@ -14,7 +14,7 @@ struct keyCompare {
 	size_t commonPrefix = 0;
 	size_t Postfix0 = 0;
 	size_t Postfix1 = 0;
-	bool LessThan;
+	bool LessThan = false;
 	bool Equal() { return commonPrefix && !(Postfix0 || Postfix1); }
 };
 
@@ -90,7 +90,7 @@ inline keyCompare iKeyString::CompareTo(const iKeyString& rhs) const
 
 inline KeyString::KeyString(const iKeyString& rhs)
 {
-	const uint8_t* b = rhs.StringData().begin();
+	const uint8_t* b = rhs.StringData().begin().Ptr();
 
 	//TODO:: optimize
 	for (size_t i = rhs.Tare(); i < rhs.StringData().Size(); i++)
@@ -103,7 +103,7 @@ inline KeyString::KeyString(const char* str)
 	size_t len = std::strlen(str);
 	if (len) {
 		key.insertBlank(0, len);
-		std::memcpy(key.begin(), str, len);
+		std::memcpy(key.begin().Ptr(), str, len);
 	}
 }
 
