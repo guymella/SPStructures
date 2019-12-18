@@ -2,9 +2,10 @@
 //  TestApp.cc
 //------------------------------------------------------------------------------
 
-#include "Unittests/ArrayTest.h"
+
 #include "Unittests/BlockTest.h"
 #include "Unittests/TableTest.h"
+#include "Unittests/ArrayTest.h"
 #include "Unittests/SparseArrayTest.h"
 #include "Unittests/TrieTest.h"
 #include "Unittests/StructTest.h"

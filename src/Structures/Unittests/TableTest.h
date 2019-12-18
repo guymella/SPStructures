@@ -10,7 +10,7 @@
 
 bool TestTable()
 {
-	Slice<int> x;
+	//Slice<int> x;
 
 	DBlock b(128);
 
