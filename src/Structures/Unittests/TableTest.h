@@ -26,8 +26,8 @@ bool TestTable()
 	size_t s = t.Size();
 	//baseTypes tt = b.Type();
 
-	baseTypes bb = *(baseTypes*)t.FindPartitionMem(0);
-	bb = *(baseTypes*)t.FindPartitionMem(1);
+	Types::baseTypes bb = *(Types::baseTypes*)t.FindPartitionMem(0);
+	bb = *(Types::baseTypes*)t.FindPartitionMem(1);
 
 	auto pp0 = t.GetPartition(0);
 	auto pp1 = t.GetPartition(1);

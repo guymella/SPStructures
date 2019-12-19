@@ -11,7 +11,7 @@
 bool TestStruct()
 {
 	Types::TypeDescr td;
-	td.type = baseTypes::int32;
+	td.type = Types::baseTypes::int32;
 
 	CHECK(!td.Nullable());
 	CHECK(!td.Multiple());
@@ -51,10 +51,16 @@ bool TestStruct()
 
 	Schema s;
 
-	s.AddAttribute("dingleCount", baseTypes::uint32);
-	s.AddAttribute(KeyString("name"), { baseTypes::string,0 });
-	s.AddAttribute(KeyString("dingles"), { baseTypes::string, Types::TypeDescr::setFLags(0,1,0,0,0,0,0)});
-	s.AddAttribute(KeyString("dinglet"), { baseTypes::string, Types::TypeDescr::setFLags(0,0,0,0,1,0,0) });
+	s.AddAttribute("dingleCount", Types::baseTypes::uint32);
+	s.AddAttribute("dingleratio", Types::baseTypes::float64);
+	s.AddAttribute("dingleletter", Types::baseTypes::chr);
+	s.AddAttribute(KeyString("name"), { Types::baseTypes::String,0 });
+	s.AddAttribute(KeyString("dingles"), { Types::baseTypes::String, Types::TypeDescr::setFLags(0,1,0,0,0,0,0)});
+	s.AddAttribute(KeyString("dinglet"), { Types::baseTypes::String, Types::TypeDescr::setFLags(0,0,0,0,1,0,0) });
+	s.AddAttribute(KeyString("dingtime"), { Types::baseTypes::float32, Types::TypeDescr::setFLags(1,0,0,0,0,0,0) });
+	s.AddAttribute(KeyString("dingwimple"), { Types::baseTypes::uint128, Types::TypeDescr::setFLags(0,0,1,0,0,0,0) });
+
+	size_t size = s.SizeOfFixed();
 
 	Entity s1(&s);
 

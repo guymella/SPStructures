@@ -9,80 +9,81 @@
 #define Included_TypeDescr_H
 namespace Types {
 	enum TypeSequence : uint8_t {
-		Fixed = 0,
-		Cached = 1,
-		FixedMulti = 2,
-		CachedFixedMulti = 3,
+		Fixed,
+		Cached,
+		FixedMulti,
+		CachedFixedMulti,
 
-		Schema = 8,
-		CachedSchema = 9,
-		FixedMultiSchema = 10,
-		CachedFixedMultiSchema = 11,
+		Schema,
+		CachedSchema,
+		FixedMultiSchema,
+		CachedFixedMultiSchema,
 
-		Nullable = 12,
-		CachedNullable = 13,
-		NullableFixedMulti = 14,
-		CachedNullableFixedMulti = 15,
+		Nullable,
+		CachedNullable,
+		NullableFixedMulti,
+		CachedNullableFixedMulti,
 
-		NullableSchema = 20,
-		CachedNullableSchema = 21,
-		NullableFixedMultiSchema = 22,
-		CachedNullableFixedMultiSchema = 23,
+		NullableSchema,
+		CachedNullableSchema,
+		NullableFixedMultiSchema,
+		CachedNullableFixedMultiSchema,
 
-		Sparse = 24,
-		CachedSparse = 25,
-		SparseFixedMulti = 26,
-		CachedSparseFixedMulti = 27,
+		Sparse,
+		CachedSparse,
+		SparseFixedMulti,
+		CachedSparseFixedMulti,
 
-		SparseSchema = 20,
-		CachedSparseSchema = 21,
-		SparseFixedMultiSchema = 22,
-		CachedSparseFixedMultiSchema = 23,
+		SparseSchema,
+		CachedSparseSchema,
+		SparseFixedMultiSchema,
+		CachedSparseFixedMultiSchema,
 
-		Multi = 24,
-		CachedMulti = 25,
-		MultiSchema = 26,
-		CachedMultiSchema = 27,
+		Multi,
+		CachedMulti,
+		MultiSchema,
+		CachedMultiSchema,
 
-		Ref = 4,
-		CachedRef = 5,
-		MultiRef = 26,
-		CachedMultiRef = 22,
-		NullableRef = 16,
-		CachedNullableRef = 17,
-		NullableMultiRef = 18,
-		CachedNullableMultiRef = 19,
+		Var,
+		CachedVar,		
+		NullableVar,
+		CachedNullableVar,
 
-		Uncached = 28,
-		UncachedMulti = 29,
-		UncachedSchema = 30,
-		UncachedMultiSchema = 31,
-		UcachedRef = 28,
-		UncachedMultRef = 29,
+		MultiVar,
+		CachedMultiVar,
+		NullableMultiVar,
+		CachedNullableMultiVar,
 
-		UncachedNullable = 32,
-		UncachedNullableMulti = 33,
-		UncachedNullableSchema = 34,
-		UncachedNullableMultiSchema = 35,
-		UncachedNullableRef = 22,
-		UncachedNullableMultiRef = 23
+		Uncached,
+		UncachedMulti,
+		UncachedSchema,
+		UncachedMultiSchema,
+		UcachedVar,
+		UncachedMultVar,
+
+		UncachedNullable,
+		UncachedNullableMulti,
+		UncachedNullableSchema,
+		UncachedNullableMultiSchema,
+		UncachedNullableVar,
+		UncachedNullableMultiVar
 	};
 
 	class Constraint {
 	public:
-		bool Contains(const KeyString& key) const;
+		iArray<uint8_t>* Contains(const KeyString& key) const;
 		bool operator==(const Constraint& rhs) const { return true; };
 	private:
 		Array<KeyString> names;
 		Array<Array<uint8_t>> args;
 	};
 
-	bool Constraint::Contains(const KeyString& key) const
+	iArray<uint8_t>* Constraint::Contains(const KeyString& key) const
 	{
 		for (size_t i = 0; i < names.Size(); i++)
 			if (names[i] == key)
-				return true;
-		return false;
+				return (iArray<uint8_t> * )args.begin(i).Ptr();
+		return NULL;
 	}
 
 	struct TypeDescr {
@@ -129,7 +130,7 @@ namespace Types {
 	inline TypeSequence TypeDescr::getTypeSequence(const Constraint* constraint) const
 	{
 		if (!Derived() || Cached()) {
-			if (!Multiple() || (constraint && constraint->Contains("FixedSize"))) {
+			if ((!Multiple() && (type <= baseTypes::Struct)) || (constraint && constraint->Contains("FixedSize"))) {
 				if (!Nullable() && !Sparse()) {
 					if (!(type == baseTypes::Struct || type == baseTypes::VarStruct)) {
 						if (!Multiple())
@@ -173,17 +174,17 @@ namespace Types {
 					}
 				}
 			} else { //Not Fixed Size
-				if (type == baseTypes::SRef || type == baseTypes::PRef || type == baseTypes::LRef) { //ref
+				if (type > baseTypes::Struct || type <= baseTypes::LRef) { //var
 					if (!Nullable()) {
 						if (!Multiple())
-							return Cached() ? CachedRef : Ref;
+							return Cached() ? CachedVar : Var;
 						else
-							Cached() ? CachedMultiRef : MultiRef;
+							return Cached() ? CachedMultiVar : MultiVar;
 					}else {
 						if (!Multiple())
-							Cached() ? CachedNullableRef : NullableRef;
+							return Cached() ? CachedNullableVar : NullableVar;
 						else
-							Cached() ? CachedNullableMultiRef : NullableMultiRef;
+							return Cached() ? CachedNullableMultiVar : NullableMultiVar;
 					}
 				}
 				else {
@@ -198,15 +199,15 @@ namespace Types {
 			if (!Nullable()) {
 				if (type == Struct || type == VarStruct)
 					return Multiple() ? UncachedMultiSchema : UncachedSchema;
-				else if (type == baseTypes::SRef || type == baseTypes::PRef || type == baseTypes::LRef)
-					return Multiple() ? UncachedMultRef : UcachedRef;
+				else if (type > baseTypes::Struct || type <= baseTypes::LRef)
+					return Multiple() ? UncachedMultVar : UcachedVar;
 				else
 					return Multiple() ? UncachedMulti : Uncached;
 			} else {
 				if (type == Struct || type == VarStruct)
 					return Multiple() ? UncachedNullableMultiSchema : UncachedNullableSchema;
-				else if (type == baseTypes::SRef || type == baseTypes::PRef || type == baseTypes::LRef)
-					return Multiple() ? UncachedNullableMultiRef : UncachedNullableRef;
+				else if (type > baseTypes::Struct || type <= baseTypes::LRef)
+					return Multiple() ? UncachedNullableMultiVar : UncachedNullableVar;
 				else
 					return Multiple() ? UncachedNullableMulti : UncachedNullable;
 			}

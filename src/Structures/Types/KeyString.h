@@ -22,6 +22,10 @@ class iKeyString {
 public:
 	virtual size_t Size() const { return StringData().Size() - Tare(); };
 	virtual bool operator==(const iKeyString& rhs) const;
+	virtual bool operator<(const iKeyString& rhs) const;
+	virtual bool operator>(const iKeyString& rhs) const;
+	virtual bool operator<=(const iKeyString& rhs) const;
+	virtual bool operator>=(const iKeyString& rhs) const;
 	virtual keyCompare CompareTo(const iKeyString& rhs) const;
 	virtual size_t& Tare(size_t tareLen = 0) = 0;
 	virtual size_t Tare() const=0;
@@ -71,6 +75,27 @@ bool iKeyString::operator==(const iKeyString& rhs) const
 {
 	keyCompare c = CompareTo(rhs);
 	return !(c.Postfix0 || c.Postfix1);
+}
+
+inline bool iKeyString::operator<(const iKeyString& rhs) const
+{
+	return CompareTo(rhs).LessThan;
+}
+
+inline bool iKeyString::operator>(const iKeyString& rhs) const
+{
+	return !((*this)<=rhs);
+}
+
+inline bool iKeyString::operator<=(const iKeyString& rhs) const
+{
+	keyCompare c = CompareTo(rhs);
+	return c.LessThan || c.Equal();
+}
+
+inline bool iKeyString::operator>=(const iKeyString& rhs) const
+{
+	return !((*this) < rhs);
 }
 
 inline keyCompare iKeyString::CompareTo(const iKeyString& rhs) const
