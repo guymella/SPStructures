@@ -4,6 +4,7 @@
 //------------------------------------------------------------------------------
 //#include "Structures/Types/schema.h"
 #include "Structures/Types/Entity.h"
+#include "Structures/Types/BitPointer.h"
 #include <assert.h>
 #define CHECK assert
 
@@ -61,6 +62,23 @@ bool TestStruct()
 	s.AddAttribute(KeyString("dingwimple"), { Types::baseTypes::uint128, Types::TypeDescr::setFLags(0,0,1,0,0,0,0) });
 
 	size_t size = s.SizeOfFixed();
+
+	uint8_t set[3] = { 0,0,0 };
+	BitRef<uint8_t,1> b;
+	b.Address = set;
+	b.Offset = 0;
+
+	CHECK(++b == 1);
+	CHECK(!(--b));
+
+	b.Offset++;
+
+	CHECK(++b == 1);
+	b.Offset--;
+	CHECK(!(b));
+
+
+
 
 	Entity s1(&s);
 

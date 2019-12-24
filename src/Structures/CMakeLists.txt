@@ -47,6 +47,7 @@ fips_begin_module(Structures)
         Entity.h
         CopyMap.h
         Iterator.h
+        BitPointer.h
     )
 	
     fips_dir(Types/Interfaces)

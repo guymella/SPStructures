@@ -13,7 +13,7 @@
 
 class Table : public iTableEditable {
 public:
-	Table() {};
+	Table();
 	Table(const size_t& size);
 	size_t Size() const override { return index.Size()-1; };
 	iDBlock* ParentBlock() override { return &block; };
@@ -44,7 +44,12 @@ private:
 };
 
 
-Table::Table( const size_t& size) 
+inline Table::Table()
+{
+	index.PushBack(0);
+}
+
+Table::Table( const size_t& size)
 {
 	for (size_t i = 0; i < size+1; i++)
 		index.PushBack(0);
