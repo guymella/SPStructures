@@ -3,15 +3,17 @@
 //------------------------------------------------------------------------------
 
 #include "Schema.h"
+#include "BitPointer.h"
 #include "Structures/Containers/Table.h"
 
 class Entity {
 public:
 	Entity(Schema* SchemaPointer);
+	BitItr<uint8_t, 1> BooleanFlags(const size_t& offset = 0);
 	Itr<uint8_t> FixedBegin(const size_t& offset = 0);
-	Itr<uint8_t> NullableFlags(const size_t& offset = 0);
+	BitItr<uint8_t,1> NullableFlags(const size_t& offset = 0);
 	Itr<uint8_t> NullableBegin(const size_t& offset = 0);
-	Itr<uint8_t> SparseFlags(const size_t& offset = 0);
+	BitItr<uint8_t, 1> SparseFlags(const size_t& offset = 0);
 	Itr<uint8_t> SparseBegin(const size_t& offset = 0);
 	void* Get(const size_t& column);
 	void* Get(const KeyString& key);

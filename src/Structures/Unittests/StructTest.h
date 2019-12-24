@@ -4,7 +4,7 @@
 //------------------------------------------------------------------------------
 //#include "Structures/Types/schema.h"
 #include "Structures/Types/Entity.h"
-#include "Structures/Types/BitPointer.h"
+
 #include <assert.h>
 #define CHECK assert
 
@@ -63,24 +63,26 @@ bool TestStruct()
 
 	size_t size = s.SizeOfFixed();
 
+	CHECK(size == 18);
+
 	uint8_t set[3] = { 0,0,0 };
-	BitRef<uint8_t,1> b;
-	b.Address = set;
-	b.Offset = 0;
+	BitItr<uint8_t,1> b(set);
+	b[0] = true;
+	b[1] = false;
+	b[2] = false;
+	b[3] = true;
 
-	CHECK(++b == 1);
-	CHECK(!(--b));
-
-	b.Offset++;
-
-	CHECK(++b == 1);
-	b.Offset--;
-	CHECK(!(b));
-
-
-
+	CHECK(*b);
+	b += 1;
+	CHECK(!*b);
+	b += 1;
+	CHECK(!*b);
+	b += 1;
+	CHECK(*b);
 
 	Entity s1(&s);
+
+	
 
 	return true;
 }

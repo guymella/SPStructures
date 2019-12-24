@@ -33,6 +33,7 @@ static const int32_t EndOfRange = -1;
 namespace Types {
 	static size_t version = 0;
 	enum baseTypes : uint8_t {
+		Bit, //1/8 byte
 		Byte, // 1 byte
 		Short, // 2 bytes
 		Word, // 4 bytes 
@@ -53,6 +54,7 @@ namespace Types {
 		MiB, // 1048576 Bytes
 		GiB, // 1,073,741,824 Bytes
 		Fat, // 4,294,967,296? Bytes
+		boolean,
 		uint8,
 		int8,
 		uint16,

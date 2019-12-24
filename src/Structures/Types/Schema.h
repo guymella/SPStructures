@@ -13,6 +13,8 @@ public:
 
 	size_t SizeOfFixed();
 	size_t SizeOfFixed() const ;
+	size_t SizeOfBools();
+	size_t SizeOfBools() const;
 	size_t GetElmSize(size_t index) const;
 	size_t BlockCount(uint8_t BlockIndex) const; //returns number of elements in the sequence block
 	size_t BlockCount(Types::TypeSequence start, uint8_t end) const; //returns number of elements in the sequence block
@@ -22,7 +24,7 @@ public:
 	bool AddAttribute(const char* name, Types::baseTypes type);	
 private:	
 	size_t fixedSize = 0;
-	bool extendable;
+	bool extendable = false;
 	SparseArray<size_t> index;
 	Array<KeyString> labels;
 	Array<Types::TypeDescr> types;
@@ -49,22 +51,53 @@ inline size_t Schema::SizeOfFixed() const
 {
 	if (fixedSize < std::numeric_limits<size_t>::max())
 		return fixedSize;
+	size_t nul = BlockCount(2);
+	size_t sps = BlockCount(3);
+	size_t Size = SizeOfBools() + nul + sps;
+	Size = (Size / 8) + ((Size % 8) ? 1 : 0); //all flags
 
-	size_t Size = 0;
-	size_t fix = BlockCount(0);
+	size_t fix = BlockCount(1);
 	for (size_t i = 0; i < fix; i++)// fixed cols
 		Size += GetElmSize(i);
-
-	size_t nul = BlockCount(1);
-	Size += nul / 8 + ((nul % 8) ? 1 : 0);//null flags
 
 	for (size_t i = 0; i < nul; i++)//null cols
 		Size += GetElmSize(i);
 
-	size_t sps = BlockCount(2);
-	Size += sps / 8 + ((sps % 8) ? 1 : 0);//sparse flags
-
 	return Size;
+}
+
+inline size_t Schema::SizeOfBools()
+{
+	size_t bools = BlockCount(0);
+	size_t size = bools;
+	for (size_t i = 0; i < bools; i++) {
+		Types::Constraint* c = Constraints.Exists(i);
+		if (c) {
+			auto argp = c->Contains(KeyString("FixedSize"));
+			if (argp) {
+				size--;
+				size += *((size_t*)(argp->begin().Ptr()));
+			}
+		}
+	}
+	return size;
+}
+
+inline size_t Schema::SizeOfBools() const
+{
+	size_t bools = BlockCount(0);
+	size_t size = bools;
+	for (size_t i = 0; i < bools; i++) {
+		const Types::Constraint* c = Constraints.Exists(i);
+		if (c) {
+			auto argp = c->Contains(KeyString("FixedSize"));
+			if (argp) {
+				size--;
+				size += *((size_t*)(argp->begin().Ptr()));
+			}
+		}
+	}
+	return size;
 }
 
 inline size_t Schema::GetElmSize(size_t index) const
@@ -119,13 +152,14 @@ inline size_t Schema::BlockCount(uint8_t BlockIndex) const
 {
 	switch (BlockIndex)
 	{
-	case 0: return BlockCount(Types::TypeSequence::Fixed, Types::TypeSequence::Nullable);
-	case 1: return BlockCount(Types::TypeSequence::Nullable,Types::TypeSequence::Sparse);
-	case 2: return BlockCount(Types::TypeSequence::Sparse, Types::TypeSequence::Multi);
-	case 3: return BlockCount(Types::TypeSequence::Multi, Types::TypeSequence::Var);
-	case 4: return BlockCount(Types::TypeSequence::Var, Types::TypeSequence::MultiVar);
-	case 5: return BlockCount(Types::TypeSequence::MultiVar, Types::TypeSequence::Uncached);
-	case 6: return BlockCount(Types::TypeSequence::Uncached, (uint8_t)index.Size());
+	case 0: return BlockCount(Types::TypeSequence::Bool, Types::TypeSequence::Fixed);
+	case 1: return BlockCount(Types::TypeSequence::Fixed, Types::TypeSequence::Nullable);
+	case 2: return BlockCount(Types::TypeSequence::Nullable,Types::TypeSequence::Sparse);
+	case 3: return BlockCount(Types::TypeSequence::Sparse, Types::TypeSequence::Multi);
+	case 4: return BlockCount(Types::TypeSequence::Multi, Types::TypeSequence::Var);
+	case 5: return BlockCount(Types::TypeSequence::Var, Types::TypeSequence::MultiVar);
+	case 6: return BlockCount(Types::TypeSequence::MultiVar, Types::TypeSequence::Uncached);
+	case 7: return BlockCount(Types::TypeSequence::Uncached, (uint8_t)index.Size());
 	default:
 		return 0;
 	}

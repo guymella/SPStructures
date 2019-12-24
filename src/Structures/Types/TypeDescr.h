@@ -9,6 +9,11 @@
 #define Included_TypeDescr_H
 namespace Types {
 	enum TypeSequence : uint8_t {
+		Bool,
+		CachedBool,
+		FixedMultiBool,
+		CachedFixedMultiBool,
+
 		Fixed,
 		Cached,
 		FixedMulti,
@@ -132,17 +137,24 @@ namespace Types {
 		if (!Derived() || Cached()) {
 			if ((!Multiple() && (type <= baseTypes::Struct)) || (constraint && constraint->Contains("FixedSize"))) {
 				if (!Nullable() && !Sparse()) {
-					if (!(type == baseTypes::Struct || type == baseTypes::VarStruct)) {
-						if (!Multiple())
-							return Cached() ? TypeSequence::Cached : Fixed;
-						else
-							return Cached() ? CachedFixedMulti : FixedMulti;
-					}
-					else { //struct
+					if ((type == baseTypes::Struct || type == baseTypes::VarStruct)) {
 						if (!Multiple())
 							return Cached() ? CachedSchema : Schema;
 						else
 							return Cached() ? CachedFixedMultiSchema : FixedMultiSchema;
+					}
+					else if (type == baseTypes::boolean) {
+						if (!Multiple())
+							return Cached() ? CachedBool : Bool;
+						else
+							return Cached() ? CachedFixedMultiBool : FixedMultiBool;
+					}
+					else { //struct
+						if (!Multiple())
+							return Cached() ? TypeSequence::Cached : Fixed;
+						else
+							return Cached() ? CachedFixedMulti : FixedMulti;
+						
 					}
 				}
 				else if (Nullable() && !Sparse()) {
