@@ -7,8 +7,8 @@
 */
 
 #include "Structures/Types.h"
-#include "Structures/Interfaces/iBlock.h"
-#include "Structures/Interfaces/iTable.h"
+#include "Interfaces/iBlock.h"
+#include "Interfaces/iTable.h"
 #include <string.h>
 #include <memory>
 

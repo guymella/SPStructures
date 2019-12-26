@@ -109,6 +109,21 @@ inline size_t Schema::GetElmSize(size_t index) const
 	if (!size)
 		return 0;//size is null
 
+	if (types[index].Columnar())//fixed size is adjacency index
+		return sizeof(size_t);
+
+	//get constraints
+	const Types::Constraint* cst = Constraints.Exists(index);	
+
+	if (types[index].type == Types::baseTypes::Struct) {
+		if (cst) {
+			auto sch = cst->Contains(KeyString("Schema"));
+			if (sch)
+				size = ((Schema*)sch->begin().Ptr())->SizeOfFixed();
+		}
+	}
+
+
 	if (size < std::numeric_limits<size_t>::max()) { //size is fixed
 		const Types::Constraint* cst = Constraints.Exists(index);
 		if (cst) {

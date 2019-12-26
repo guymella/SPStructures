@@ -12,7 +12,7 @@
 */
 //#include "Core/Config.h"
 //#include "Core/Assertion.h"
-#include "Structures/Interfaces/iArray.h"
+#include "Interfaces/iArray.h"
 
 //namespace Oryol {
 template<typename TYPE> class Slice;

@@ -7,8 +7,8 @@
 */
 
 #include "Structures/Types.h"
-#include "Structures/Interfaces/iTable.h"
-#include "Structures/Containers/Partition.h"
+#include "Interfaces/iTable.h"
+#include "Partition.h"
 
 template <size_t SIZE>
 class TableStruct : public iTableFlexible {

@@ -7,7 +7,7 @@
 */
 
 #include "Structures/Types.h"
-#include "Structures/Interfaces/iBlock.h"
+#include "Interfaces/iBlock.h"
 #include <string.h>
 #include <memory>
 

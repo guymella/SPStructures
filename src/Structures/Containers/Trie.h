@@ -7,7 +7,7 @@
 */
 
 #include "Structures/Types.h"
-#include "Structures/Interfaces/iTrie.h"
+#include "Interfaces/iTrie.h"
 #include "Structures/Containers/Partition.h"
 //#include "Structures/Types/KeyString.h"
 

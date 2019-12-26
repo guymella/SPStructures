@@ -12,7 +12,7 @@
 */
 //#include "Core/Config.h"
 //#include "Core/Assertion.h"
-#include "Structures/Interfaces/iArray.h"
+#include "Interfaces/iArray.h"
 #include "ArrayPartition.h"
 
 template <typename TYPE>

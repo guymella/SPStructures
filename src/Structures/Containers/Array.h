@@ -35,7 +35,7 @@
 //#include "Core/Containers/elementBuffer.h"
 #include "Structures/Containers/Slice.h"
 #include "Structures/Containers/SmartSlice.h"
-#include "Structures/Interfaces/iArray.h"
+#include "Interfaces/iArray.h"
 #include "Structures/Containers/Block.h"
 
 #include <initializer_list>

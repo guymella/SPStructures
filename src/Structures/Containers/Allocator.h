@@ -9,7 +9,8 @@
 //#include <stdint.h>
 //#include <string.h>
 //#include <memory>
-#include "Array.h"
+//#include "Array.h"
+#include "Interfaces\iBlock.h"
 
 template <size_t Unit>
 class Allocator {
