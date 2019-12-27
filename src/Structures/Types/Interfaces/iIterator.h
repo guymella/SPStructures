@@ -6,7 +6,7 @@
     @brief interface for structures that can be Iterated
 */
 
-#include <iterator>
+//#include <iterator>
 
 template <typename TYPE>
 class iIteratorBase {

@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 
 #include "Interfaces/iIterator.h"
-
+#include <memory>
 
 
 template <typename TYPE>
@@ -39,8 +39,8 @@ public:
 	TYPE operator[](size_t index) const;
 	operator void* () const { return (void*)Ptr(); };
 	operator size_t () const { return (size_t)Ptr(); };
-	operator TYPE* () { return (TYPE*)Ptr(); };
-	operator const TYPE* () const { return (TYPE*)Ptr(); };
+	//operator TYPE* () { return (TYPE*)Ptr(); };
+	//operator const TYPE* () const { return (TYPE*)Ptr(); };
 private:
 	bool isItr = false;
 	union { 
@@ -65,7 +65,7 @@ template<typename TYPE>
 inline Itr<TYPE>::Itr(const Itr<TYPE>& rhs)
 {
 	if (rhs.isItr)
-		i = rhs.MakeCopy();
+		i = rhs.i->MakeCopy();
 	else
 		p = rhs.p;
 }
@@ -133,7 +133,7 @@ inline Itr<TYPE>& Itr<TYPE>::operator++()
 template<typename TYPE>
 inline Itr<TYPE> Itr<TYPE>::operator++(int)
 {
-	ptr<TYPE> rtn(*this);
+	Itr<TYPE> rtn(*this);
 	++(*this);
 	return rtn;
 }

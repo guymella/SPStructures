@@ -11,6 +11,38 @@
 #include "Partition.h"
 #include "Array.h"
 
+class Table : iTable<> {
+	//Size of table
+	virtual size_t Size() const override = 0;
+	/// C++ conform begin
+	virtual Itr<iBlock> begin(const int64_t& offset = 0) override = 0;
+	/// C++ conform begin
+	virtual Itr<const iBlock> begin(const int64_t& offset = 0) const override = 0;
+	/// C++ conform end
+	virtual Itr<iBlock> end(const int64_t& offset = 0) override = 0;
+	/// C++ conform end
+	virtual Itr<const iBlock> end(const int64_t& offset = 0) const override = 0;
+};
+
+template <size_t tableSIZE, size_t blockSIZE>
+class TableSF : iTable<>{
+public:
+	//Size of table
+	virtual size_t Size() const override { return tableSIZE; };
+	/// C++ conform begin
+	virtual Itr<iBlock> begin(const int64_t& offset = 0) override = 0;
+	/// C++ conform begin
+	virtual Itr<const iBlock> begin(const int64_t& offset = 0) const override = 0;
+	/// C++ conform end
+	virtual Itr<iBlock> end(const int64_t& offset = 0) override = 0;
+	/// C++ conform end
+	virtual Itr<const iBlock> end(const int64_t& offset = 0) const override = 0;
+protected:
+	BlockRef[tableSIZE]
+}
+
+
+
 class Table : public iTableEditable {
 public:
 	Table();

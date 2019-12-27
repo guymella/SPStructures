@@ -7,20 +7,20 @@ fips_begin_module(Structures)
 
 	fips_dir(Containers)
 		fips_files(
-			Vector.h
-			Allocator.h 
-			Block.h 
-			Table.h 
-			TableStruct.h
-			Partition.h
-			Array.h
-			SparseArray.h
-			ArrayPartition.h
-			Slice.h
-			SmartArrayPartition.h
-			SmartSlice.h
-			FilterSlice.h
-			Trie.h
+			#Vector.h
+			#Allocator.h 
+			Block.h Block.cpp
+			#Table.h 
+			#TableStruct.h
+			#Partition.h
+			#Array.h
+			#SparseArray.h
+			#ArrayPartition.h
+			#Slice.h
+			#SmartArrayPartition.h
+			#SmartSlice.h
+			#FilterSlice.h
+			#Trie.h
 
 			#ArrayMap.h
 			#Buffer.h
@@ -36,29 +36,29 @@ fips_begin_module(Structures)
 
 	fips_dir(Containers/Interfaces)
 		fips_files(
-			iBlock.h 
+			iBlock.h iBlock.cpp
 			iTable.h
-			iArray.h
-			iStruct.h iStruct.cc
+			#iArray.h
+			#iStruct.h iStruct.cc
 			iCountable.h
 			iDynamic.h
-			iQueue.h
-			iIndexable.h
+			#iQueue.h
+			#iIndexable.h
 			iIterable.h
-			iStandard.h
-			iTrie.h
+			#iStandard.h
+			#iTrie.h
 		)
 
 	fips_dir(Types)
 		fips_files(
-			VarInt.h   
-			TypeDescr.h
-			KeyString.h
-			Schema.h
-			Entity.h
-			CopyMap.h
+			#VarInt.h   
+			#TypeDescr.h
+			#KeyString.h
+			#Schema.h
+			#Entity.h
+			#CopyMap.h
 			Iterator.h
-			BitPointer.h
+			#BitPointer.h
 		)
 	
 	fips_dir(Types/Interfaces)
@@ -90,13 +90,14 @@ fips_begin_app(TestApp cmdline)
 	fips_files(TestApp.cc)
 	fips_dir(Unittests)
 		fips_files(
-        		ArrayTest.h
+			#AllocatorTest.h
+        	#ArrayTest.h
 			BlockTest.h
-			TableTest.h
-			SliceTest.h
-			SmartSliceTest.h
-			SparseArrayTest.h
-			TrieTest.h
-			StructTest.h
+			#TableTest.h
+			#SliceTest.h
+			#SmartSliceTest.h
+			#SparseArrayTest.h
+			#TrieTest.h
+			#StructTest.h
 		)
 fips_end_app()

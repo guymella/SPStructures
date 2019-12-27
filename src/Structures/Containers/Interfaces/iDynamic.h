@@ -26,6 +26,7 @@
 
 	class iGrowable {
 	public:
+
 		// Grow Automatically
 		virtual inline void Grow() = 0; 
 		//grow to specific size, copy all to front
@@ -38,6 +39,12 @@
 	public:
 		//grow using CopyMap
 		virtual void GrowMap(const CopyMap& map) = 0; 
+	};
+
+	class iDynamicResize {
+	public:
+		//Reiize to the size Specified (trancates if smaller)
+		virtual void Resize(const size_t& newSize) = 0;
 	};
 
 	class iDynamicFront {
@@ -56,14 +63,32 @@
 		virtual void ReserveBack(const size_t& numElements) = 0;
 	};
 
-	class iDynamic : public iDynamicCap, public iDynamicFront, public iDynamicBack, public iDynamicFlatten, public iGrowable {
+	class iDynamic : public iDynamicCap, public iDynamicResize, public iDynamicFront, public iDynamicBack, public iDynamicFlatten//, public iGrowable 
+	{
 	public:
-		/// Realocate and Reserve At least numElements additional elelemnts at Back 
-		virtual void Reserve(const size_t& numElementsBack) = 0;
-		// Realocate and Reserve At front and back
-		virtual void Reserve(const size_t& numElementsFront, const size_t& numElementsBack) = 0;
-		//Move Spare from back To Front without reallocation
-		virtual void ShiftBack(const size_t& numShift) = 0; 
-		//Move Spare from Front to Back without Reallocation
-		virtual void ShiftFront(const size_t& numShift) = 0;
+		//Total Capacity of container without reallocation
+		virtual size_t Capacity() const override = 0;
+		/// total Amount of additional ellements that can be added without reallocation
+		virtual size_t Spare() const override = 0; //
+		// remove all spare reallocate to smallest cappacity that fits current size
+		virtual void Trim() override = 0;
+		//Reiize to the size Specified (trancates if smaller)
+		virtual void Resize(const size_t& newSize) override = 0;
+		/// total number of additional aelements that can be added to front without reallocation
+		virtual size_t SpareFront() const override = 0;
+		/// realocate and include At least numelelents Spare at front
+		virtual void ReserveFront(const size_t& numElements) override = 0;
+		/// total number of additional elements that can be added to back without reallocation
+		virtual size_t SpareBack() const override = 0;
+		/// realocat and include at least numElements Spare At Back
+		virtual void ReserveBack(const size_t& numElements) override = 0;
+
+		///// Realocate and Reserve At least numElements additional elelemnts at Back 
+		//virtual void Reserve(const size_t& numElementsBack) = 0;
+		//// Realocate and Reserve At front and back
+		//virtual void Reserve(const size_t& numElementsFront, const size_t& numElementsBack) = 0;
+		////Move Spare from back To Front without reallocation
+		//virtual void ShiftBack(const size_t& numShift) = 0; 
+		////Move Spare from Front to Back without Reallocation
+		//virtual void ShiftFront(const size_t& numShift) = 0;
 	};
