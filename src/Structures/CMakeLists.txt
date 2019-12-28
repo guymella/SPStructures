@@ -8,9 +8,10 @@ fips_begin_module(Structures)
 	fips_dir(Containers)
 		fips_files(
 			#Vector.h
-			#Allocator.h 
+			Allocator.h 
 			Block.h Block.cpp
-			#Table.h 
+			Table.h 
+			Radical.h
 			#TableStruct.h
 			#Partition.h
 			#Array.h
@@ -90,7 +91,8 @@ fips_begin_app(TestApp cmdline)
 	fips_files(TestApp.cc)
 	fips_dir(Unittests)
 		fips_files(
-			#AllocatorTest.h
+			AllocatorTest.h
+			RadicalTest.h
         	#ArrayTest.h
 			BlockTest.h
 			#TableTest.h

@@ -16,7 +16,8 @@
 #include "iTable.h"
 
 
-class iBlock : public iTable<uint8_t> {
+class iBlock : public iCountable, public iIterable<uint8_t>
+{
 public:	
 	//Size of table
 	virtual size_t Size() const override = 0;
@@ -31,12 +32,14 @@ public:
 	/// C++ conform end
 	virtual Itr<const uint8_t> end(const int64_t& offset = 0) const override { return begin(Size() + offset); };
 
+	/// Compare blocks
+	//static size_t Compare(const iBlock& a, const iBlock& b)
 	// indicates presence of subtablte Table();
-	//virtual bool ContainsTable() const { return Table(); };
+	virtual bool ContainsTable() const { return Table(); };
 	//access subtable
-	//virtual iTable<>* Table() { return NULL; };
+	virtual iTableD<>* Table() { return NULL; };
 	//const access subtable
-	//virtual const iTable<>* Table() const { return NULL; };
+	virtual const iTableD<>* Table() const { return NULL; };
 
 protected:
 	//Copy From Another Block

@@ -15,14 +15,18 @@
 //#include "Structures/Containers/Partition.h"
 
 //class Partition;
-class iBlock;
+class iBlockD;
 
-template<typename TYPE = iBlock>
+template<typename TYPE = iBlockD>
 class iTable : public iCountable, public iIterable<TYPE>
 {
 public:
+	//get Block from table
+	virtual iBlockD& GetBlock(size_t blockID) { return begin(blockID)[0]; };
 	//Size of table
 	virtual size_t Size() const override = 0;
+	//Size of SubBlocks combined
+	virtual size_t BlocksSize() const { return Size(); };
 	/// C++ conform begin
 	virtual Itr<TYPE> begin(const int64_t& offset = 0) override = 0;
 	/// C++ conform begin
@@ -42,6 +46,15 @@ public:
 	//virtual size_t GetPartitionCapacity(const size_t& index) const;
 	//virtual void* FindPartitionMem(size_t index);
 		
+};
+
+template<typename TYPE = iBlockD>
+class iTableD : public iTable<TYPE> {
+public:
+	//add another block to the table
+	virtual void PushBack(size_t blockSize = 0) =0;
+	//add another block to front of table
+	virtual void PushFront(size_t blockSize = 0) = 0;
 };
  //
 

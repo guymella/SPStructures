@@ -3,8 +3,8 @@
 //------------------------------------------------------------------------------
 
 #include "Unittests/BlockTest.h"
-//#include "Unittests/AllocatorTest.h"
-
+#include "Unittests/AllocatorTest.h"
+#include "Unittests/RadicalTest.h"
 //#include "Unittests/TableTest.h"
 //#include "Unittests/ArrayTest.h"
 //#include "Unittests/SparseArrayTest.h"
@@ -15,13 +15,14 @@
 
 int main(void) {
 	BlockTest();
-	//AllocatorTest();
-	
+	AllocatorTest();
+	RadicalTest();
 	//TestTable();
 	//testArray();
 	//testSparseArray();
 	//TestTrie();
 	//TestStruct();
 
+	
 	return 0;
 }

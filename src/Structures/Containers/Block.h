@@ -90,12 +90,14 @@ public:
 	BlockDP(const size_t& size) { AllocateBlock(size); };
 	//CopyConstructor
 	BlockDP(const iBlock& rhs) { Copy(rhs); };
+	//CopyConstructor
+	BlockDP(const BlockDP& rhs) { Copy(rhs); };
 	//move Constructor
 	BlockDP(BlockDP&& rhs) { Move(std::move(rhs)); };
 	//destructor
 	~BlockDP() { if (blockPtr) std::free(blockPtr); }
 	/// move-assignment operator (same capacity and size)
-	void operator=(BlockD&& rhs) noexcept { Move(std::move(rhs)); };
+	void operator=(BlockDP&& rhs) noexcept { Move(std::move(rhs)); };
 	//Size of Block
 	virtual inline size_t Size() const override { return size; };
 
@@ -133,14 +135,20 @@ public:
 	BlockDV(const size_t& size);
 	//CopyConstructor
 	BlockDV(const iBlock& rhs) { Copy(rhs); };
+	//CopyConstructor
+	BlockDV(const BlockDV& rhs) { Copy(rhs); };
 	//move Constructor
 	BlockDV(BlockDV&& rhs) { Move(std::move(rhs)); };
+	/// move-assignment operator (same capacity and size)
+	void operator=(BlockDV&& rhs) noexcept { Move(std::move(rhs)); };
 	//destructor
 	//~BlockDV() { if (blockPtr) std::free(blockPtr); };
 	//Total Capacity of container without reallocation
 	virtual size_t Capacity() const override { return capacity; };
 	// remove all spare reallocate to smallest cappacity that fits current size
 	virtual void Trim() override;
+	/// realocate and include At least numelelents Spare at front
+	virtual void ReserveFront(const size_t& numElements) override;
 	/// total number of additional elements that can be added to back without reallocation
 	virtual size_t SpareBack() const override { return Capacity() - Size(); };
 	/// realocat and include at least numElements Spare At Back
@@ -237,6 +245,12 @@ inline void BlockDV::Trim()
 			capacity = 0;
 		}		
 	}	
+}
+
+inline void BlockDV::ReserveFront(const size_t& numElements)
+{
+	BlockDP::ReserveFront(numElements);
+	capacity += numElements;
 }
 
 inline void BlockDV::ReserveBack(const size_t& sizeAdd)

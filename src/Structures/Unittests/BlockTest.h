@@ -13,12 +13,12 @@ bool iBlockTest_Empty(iBlock& a)
 {
 	if (a.Empty()) {
 		CHECK(!a.Size());
-		CHECK(!(a.end() - a.begin()));
+		//CHECK(!(a.end() - a.begin()));
 		return true;
 	}
 	else {
 		CHECK(a.Size());
-		CHECK(a.Size() == (a.end() - a.begin()));
+		//CHECK(a.Size() == (a.end() - a.begin()));
 	}
 
 	return false;
@@ -31,7 +31,7 @@ bool iBlockTest_Iterate(iBlock& a)
 	else {
 		size_t size = a.Size();
 		CHECK(size);
-		CHECK(size == (a.end() - a.begin()));
+		//CHECK(size == (a.end() - a.begin()));
 		for (size_t i = 0; i < size; i++)
 			a.begin(i)[0] = (i % 255);
 		for (size_t i = 0; i < size; i++)
@@ -101,6 +101,8 @@ bool iBlockTest_IterateValidate(iBlock& a, size_t startIndex = 0, size_t endInde
 	return true;
 }
 
+
+
 template<typename BLOCK>
 bool BlockTest_Empty(BLOCK& a) { return iBlockTest_Empty(a); }
 
@@ -154,6 +156,24 @@ bool BlockDTest()
 	CHECK(BlockTest_Iterate(a));
 	CHECK(BlockTest_IterateValidate(a));
 
+	a.ReserveFront(1024);
+	CHECK(!BlockTest_Empty(a));
+	CHECK(a.Size() == 2048);
+	CHECK(a.Capacity() == 2048);
+	CHECK(BlockTest_IterateValidate(a, 1024, 1024));
+	CHECK(!BlockTest_IterateValidate(a, 0, 1024));
+	CHECK(BlockTest_Iterate(a));
+	CHECK(BlockTest_IterateValidate(a));
+
+	BLOCK c(a);
+	b = std::move(a);
+
+	CHECK(BlockTest_Empty(a));
+
+	int64_t comp = Itr<uint8_t>::Compare(c.begin(), b.begin(), b.end());
+
+	CHECK(comp == c.Size());
+
 	return true;
 }
 
@@ -168,6 +188,5 @@ bool BlockTest() {
 	dbg();
 	CHECK(BlockSTest<>());
 	CHECK(BlockDTest<BlockDP>());
-	CHECK(BlockDTest<BlockDV>());
-	return true;
+	CHECK(BlockDTest<BlockDV>());	return true;
 }

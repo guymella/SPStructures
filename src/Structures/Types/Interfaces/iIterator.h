@@ -67,7 +67,7 @@ template<typename TYPE>
 inline TYPE& itr<TYPE>::operator[](size_t index)
 {
 	itr<TYPE>* tmp = MakeCopy();
-	tmp += index;
+	*tmp += index;
 	TYPE* rtn = (*tmp).Ptr();
 	std::free(tmp);
 	return *rtn;
@@ -77,7 +77,7 @@ template<typename TYPE>
 inline const TYPE& itr<TYPE>::operator[](size_t index) const
 {
 	itr<TYPE>* tmp = MakeCopy();
-	tmp += index;
+	*tmp += index;
 	const TYPE* rtn = (*tmp).Ptr();
 	std::free(tmp);
 	return *rtn;

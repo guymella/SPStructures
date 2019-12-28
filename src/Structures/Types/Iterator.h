@@ -5,14 +5,14 @@
 #include "Interfaces/iIterator.h"
 #include <memory>
 
-
-template <typename TYPE>
+template <typename TYPE, typename itrTYPE = itr<TYPE>>
 class Itr { //an interface adapter for Iterator and pointers
 public:
-	//ptr(itr<TYPE>* Ptr) : i(Ptr), isItr(true) {};
+	Itr() {};
+	Itr(itrTYPE* Ptr) : i(Ptr), isItr(true) {};
 	Itr(TYPE* Ptr) : p(Ptr) , isItr(false) {};
-	Itr(const itr<TYPE>& Itr);
-	Itr(itr<TYPE>&& Itr);
+	Itr(const itrTYPE& Itr);
+	Itr(itrTYPE&& Itr);
 	Itr(const Itr<TYPE>& rhs);
 	Itr(Itr<TYPE>&& rhs);
 	~Itr() { if (isItr) std::free(i); };
@@ -26,43 +26,45 @@ public:
 	TYPE& operator->() { return *Ptr();};
 	const TYPE& operator*() const { return *Ptr();};
 	const TYPE& operator->() const { return *Ptr();	};
-	Itr<TYPE>& operator++();
-	Itr<TYPE> operator++(int);
-	Itr<TYPE>& operator--();
-	Itr<TYPE> operator--(int);
-	Itr<TYPE>& operator+=(int64_t offset);
-	Itr<TYPE> operator+(int64_t offset) const;
-	Itr<TYPE>& operator-=(int64_t offset);
-	Itr<TYPE> operator-(int64_t offset) const;
+	Itr<TYPE, itrTYPE>& operator++();
+	Itr<TYPE, itrTYPE> operator++(int);
+	Itr<TYPE, itrTYPE>& operator--();
+	Itr<TYPE, itrTYPE> operator--(int);
+	Itr<TYPE, itrTYPE>& operator+=(int64_t offset);
+	Itr<TYPE, itrTYPE> operator+(int64_t offset) const;
+	Itr<TYPE, itrTYPE>& operator-=(int64_t offset);
+	Itr<TYPE, itrTYPE> operator-(int64_t offset) const;
 	int64_t operator-(const Itr<TYPE>& rhs) const;
 	TYPE& operator[](size_t index);
-	TYPE operator[](size_t index) const;
+	const TYPE& operator[](size_t index) const;
 	operator void* () const { return (void*)Ptr(); };
 	operator size_t () const { return (size_t)Ptr(); };
 	//operator TYPE* () { return (TYPE*)Ptr(); };
 	//operator const TYPE* () const { return (TYPE*)Ptr(); };
+	/// Compare from iterators
+	static int64_t Compare(Itr<TYPE> a, Itr<TYPE> b, Itr<TYPE> bEnd);
 private:
 	bool isItr = false;
 	union { 
-		itr<TYPE>* i;
+		itrTYPE* i;
 		TYPE* p;
 	};
 };
 
-template<typename TYPE>
-inline Itr<TYPE>::Itr(const itr<TYPE>& Itr) : isItr(true)
+template<typename TYPE, typename itrTYPE>
+inline Itr<TYPE, itrTYPE>::Itr(const itrTYPE& Itr) : isItr(true)
 {
 	i = Itr.MakeCopy();
 }
 
-template<typename TYPE>
-inline Itr<TYPE>::Itr(itr<TYPE>&& Itr)
+template<typename TYPE, typename itrTYPE>
+inline Itr<TYPE, itrTYPE>::Itr(itrTYPE&& Itr)
 {
 	i = Itr.MakeCopy();
 }
 
-template<typename TYPE>
-inline Itr<TYPE>::Itr(const Itr<TYPE>& rhs)
+template<typename TYPE, typename itrTYPE>
+inline Itr<TYPE, itrTYPE>::Itr(const Itr<TYPE>& rhs)
 {
 	if (rhs.isItr)
 		i = rhs.i->MakeCopy();
@@ -70,8 +72,8 @@ inline Itr<TYPE>::Itr(const Itr<TYPE>& rhs)
 		p = rhs.p;
 }
 
-template<typename TYPE>
-inline Itr<TYPE>::Itr(Itr<TYPE>&& rhs)
+template<typename TYPE, typename itrTYPE>
+inline Itr<TYPE, itrTYPE>::Itr(Itr<TYPE>&& rhs)
 {
 	if (rhs.isItr){
 		i = rhs.i;
@@ -83,8 +85,8 @@ inline Itr<TYPE>::Itr(Itr<TYPE>&& rhs)
 
 }
 
-template<typename TYPE>
-inline void Itr<TYPE>::operator=(Itr<TYPE>&& rhs)
+template<typename TYPE, typename itrTYPE>
+inline void Itr<TYPE, itrTYPE>::operator=(Itr<TYPE>&& rhs)
 {
 	if (rhs.isItr) {
 		i = rhs.i;
@@ -95,17 +97,17 @@ inline void Itr<TYPE>::operator=(Itr<TYPE>&& rhs)
 		p = rhs.p;
 }
 
-template<typename TYPE>
-inline void Itr<TYPE>::operator=(const Itr<TYPE>& rhs)
+template<typename TYPE, typename itrTYPE>
+inline void Itr<TYPE, itrTYPE>::operator=(const Itr<TYPE>& rhs)
 {
 	if (rhs.isItr)
-		i = rhs.MakeCopy();
+		i = rhs.i->MakeCopy();
 	else
 		p = rhs.p;	
 }
 
-template<typename TYPE>
-inline bool Itr<TYPE>::operator==(const Itr<TYPE>& rhs) const
+template<typename TYPE, typename itrTYPE>
+inline bool Itr<TYPE, itrTYPE>::operator==(const Itr<TYPE>& rhs) const
 {
 	if (isItr && rhs.isItr)
 		return i == rhs.i;
@@ -114,14 +116,14 @@ inline bool Itr<TYPE>::operator==(const Itr<TYPE>& rhs) const
 	return false;
 }
 
-template<typename TYPE>
-inline bool Itr<TYPE>::operator!=(const Itr<TYPE>& rhs) const
+template<typename TYPE, typename itrTYPE>
+inline bool Itr<TYPE, itrTYPE>::operator!=(const Itr<TYPE>& rhs) const
 {
 	return !((*this) == rhs);
 }
 
-template<typename TYPE>
-inline Itr<TYPE>& Itr<TYPE>::operator++()
+template<typename TYPE, typename itrTYPE>
+inline Itr<TYPE, itrTYPE>& Itr<TYPE, itrTYPE>::operator++()
 {
 	if (isItr)
 		++i;
@@ -130,16 +132,16 @@ inline Itr<TYPE>& Itr<TYPE>::operator++()
 	return *this;
 }
 
-template<typename TYPE>
-inline Itr<TYPE> Itr<TYPE>::operator++(int)
+template<typename TYPE, typename itrTYPE>
+inline Itr<TYPE, itrTYPE> Itr<TYPE, itrTYPE>::operator++(int)
 {
 	Itr<TYPE> rtn(*this);
 	++(*this);
 	return rtn;
 }
 
-template<typename TYPE>
-inline Itr<TYPE>& Itr<TYPE>::operator--()
+template<typename TYPE, typename itrTYPE>
+inline Itr<TYPE, itrTYPE>& Itr<TYPE, itrTYPE>::operator--()
 {
 	if (isItr) 
 		--i;
@@ -148,16 +150,16 @@ inline Itr<TYPE>& Itr<TYPE>::operator--()
 	return *this;	
 }
 
-template<typename TYPE>
-inline Itr<TYPE> Itr<TYPE>::operator--(int)
+template<typename TYPE, typename itrTYPE>
+inline Itr<TYPE, itrTYPE> Itr<TYPE, itrTYPE>::operator--(int)
 {
-	ptr<TYPE> rtn(*this);
+	Itr<TYPE> rtn(*this);
 	--(*this);
 	return rtn;
 }
 
-template<typename TYPE>
-inline Itr<TYPE>& Itr<TYPE>::operator+=(int64_t offset)
+template<typename TYPE, typename itrTYPE>
+inline Itr<TYPE, itrTYPE>& Itr<TYPE, itrTYPE>::operator+=(int64_t offset)
 {
 	if (isItr)
 		i += offset;
@@ -166,16 +168,16 @@ inline Itr<TYPE>& Itr<TYPE>::operator+=(int64_t offset)
 	return (*this);
 }
 
-template<typename TYPE>
-inline Itr<TYPE> Itr<TYPE>::operator+(int64_t offset) const
+template<typename TYPE, typename itrTYPE>
+inline Itr<TYPE, itrTYPE> Itr<TYPE, itrTYPE>::operator+(int64_t offset) const
 {
 	ptr<TYPE> rtn(*this);
 	rtn += offset;
 	return rtn;
 }
 
-template<typename TYPE>
-inline Itr<TYPE>& Itr<TYPE>::operator-=(int64_t offset)
+template<typename TYPE, typename itrTYPE>
+inline Itr<TYPE, itrTYPE>& Itr<TYPE, itrTYPE>::operator-=(int64_t offset)
 {
 	if (isItr)
 		i -= offset;
@@ -184,27 +186,27 @@ inline Itr<TYPE>& Itr<TYPE>::operator-=(int64_t offset)
 	return (*this);
 }
 
-template<typename TYPE>
-inline Itr<TYPE> Itr<TYPE>::operator-(int64_t offset)const
+template<typename TYPE, typename itrTYPE>
+inline Itr<TYPE, itrTYPE> Itr<TYPE, itrTYPE>::operator-(int64_t offset)const
 {
 	ptr<TYPE> rtn(*this);
 	rtn -= offset;
 	return rtn;
 }
 
-template<typename TYPE>
-inline int64_t Itr<TYPE>::operator-(const Itr<TYPE>& rhs) const
+template<typename TYPE, typename itrTYPE>
+inline int64_t Itr<TYPE, itrTYPE>::operator-(const Itr<TYPE>& rhs) const
 {
 	if (isItr && rhs.isItr)
-		return i - rhs.i;
+		return std::numeric_limits<int64_t>::max(); // *i - *(rhs.i);
 	if (!isItr && !rhs.isItr)
 		return p - rhs.p;
 			
 	return std::numeric_limits<int64_t>::max();
 }
 
-template<typename TYPE>
-inline TYPE& Itr<TYPE>::operator[](size_t index)
+template<typename TYPE, typename itrTYPE>
+inline TYPE& Itr<TYPE, itrTYPE>::operator[](size_t index)
 {
 	if (isItr)
 		return (*i)[index];
@@ -212,5 +214,19 @@ inline TYPE& Itr<TYPE>::operator[](size_t index)
 		return p[index];
 }
 
-
-
+template<typename TYPE, typename itrTYPE>
+inline int64_t Itr<TYPE, itrTYPE>::Compare(Itr<TYPE> a, Itr<TYPE> b, Itr<TYPE> bEnd)
+{
+	int64_t c = 0;
+	while (b != bEnd) {
+		if (*a == *b)
+			c++;
+		else if (*(a) < *(b))
+			return -c;
+		else
+			return c;
+		a++;
+		b++;
+	}
+	return c;
+}
