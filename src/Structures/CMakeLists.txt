@@ -3,51 +3,24 @@ fips_begin_module(Structures)
 	
 	fips_files(
 		Types.h
+		Palloc.h
 	)
 
 	fips_dir(Containers)
 		fips_files(
-			#Vector.h
-			Allocator.h 
 			Block.h Block.cpp
-			Table.h 
-			Radical.h
-			#TableStruct.h
-			#Partition.h
-			#Array.h
-			#SparseArray.h
-			#ArrayPartition.h
-			#Slice.h
-			#SmartArrayPartition.h
-			#SmartSlice.h
-			#FilterSlice.h
-			#Trie.h
-
-			#ArrayMap.h
-			#Buffer.h
-			#HashSet.h
-			#KeyValuePair.h
-			#Map.h
-			#Queue.h
-			#Set.h
-			#StaticArray.h
-			#elementBuffer.h
-			#InlineArray.h
+			BlockP.h
+			BlockPP.h	
+			BlockD.h 			
 		)
 
 	fips_dir(Containers/Interfaces)
 		fips_files(
-			iBlock.h iBlock.cpp
-			iTable.h
-			#iArray.h
-			#iStruct.h iStruct.cc
-			iCountable.h
 			iDynamic.h
-			#iQueue.h
-			#iIndexable.h
-			iIterable.h
-			#iStandard.h
-			#iTrie.h
+			iBlock.h 
+			iBlockP.h
+			iBlockPP.h
+			iBlockD.h 
 		)
 
 	fips_dir(Types)
@@ -95,6 +68,7 @@ fips_begin_app(TestApp cmdline)
 			RadicalTest.h
         	#ArrayTest.h
 			BlockTest.h
+			DBlockTest.h
 			#TableTest.h
 			#SliceTest.h
 			#SmartSliceTest.h

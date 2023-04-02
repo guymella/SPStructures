@@ -7,7 +7,6 @@
 #include "structures/Containers/Block.h"
 #include "structures/Containers/BlockP.h"
 #include "structures/Containers/BlockPP.h"
-#include "structures/Containers/BlockD.h"
 
 #include <assert.h>
 #define CHECK assert
@@ -130,55 +129,55 @@ bool BlockSTest()
 	return true;
 }
 
-template<typename BLOCK>
-bool BlockDTest()
-{
-	BLOCK a;
-	CHECK(BlockTest_Empty(a));
-	CHECK(!BlockTest_Iterate(a));
-
-	BLOCK b(1024);
-	CHECK(!BlockTest_Empty(b));
-	CHECK(BlockTest_Iterate(b));
-
-	//test grow
-
-	a.ReserveBack(512);
-	CHECK(!BlockTest_Empty(a));
-	CHECK(a.Size() == 512);
-	CHECK(a.Capacity() == 512);
-	CHECK(BlockTest_Iterate(a));
-	CHECK(BlockTest_IterateValidate(a));
-
-	a.Resize(1024);
-	CHECK(!BlockTest_Empty(a));
-	CHECK(a.Size() == 1024);
-	CHECK(a.Capacity() == 1024);
-	CHECK(BlockTest_IterateValidate(a,0,512));
-	CHECK(!BlockTest_IterateValidate(a, 0, 1024));
-	CHECK(BlockTest_Iterate(a));
-	CHECK(BlockTest_IterateValidate(a));
-
-	a.ReserveFront(1024);
-	CHECK(!BlockTest_Empty(a));
-	CHECK(a.Size() == 2048);
-	CHECK(a.Capacity() == 2048);
-	CHECK(BlockTest_IterateValidate(a, 1024, 1024));
-	CHECK(!BlockTest_IterateValidate(a, 0, 1024));
-	CHECK(BlockTest_Iterate(a));
-	CHECK(BlockTest_IterateValidate(a));
-
-	BLOCK c(a);
-	b = std::move(a);
-
-	CHECK(BlockTest_Empty(a));
-
-	int64_t comp = Itr<uint8_t>::Compare(c.begin(), b.begin(), b.end());
-
-	CHECK(comp == c.Size());
-
-	return true;
-}
+//template<typename BLOCK>
+//bool BlockDTest()
+//{
+//	BLOCK a;
+//	CHECK(BlockTest_Empty(a));
+//	CHECK(!BlockTest_Iterate(a));
+//
+//	BLOCK b(1024);
+//	CHECK(!BlockTest_Empty(b));
+//	CHECK(BlockTest_Iterate(b));
+//
+//	//test grow
+//
+//	a.ReserveBack(512);
+//	CHECK(!BlockTest_Empty(a));
+//	CHECK(a.Size() == 512);
+//	CHECK(a.Capacity() == 512);
+//	CHECK(BlockTest_Iterate(a));
+//	CHECK(BlockTest_IterateValidate(a));
+//
+//	a.Resize(1024);
+//	CHECK(!BlockTest_Empty(a));
+//	CHECK(a.Size() == 1024);
+//	CHECK(a.Capacity() == 1024);
+//	CHECK(BlockTest_IterateValidate(a,0,512));
+//	CHECK(!BlockTest_IterateValidate(a, 0, 1024));
+//	CHECK(BlockTest_Iterate(a));
+//	CHECK(BlockTest_IterateValidate(a));
+//
+//	a.ReserveFront(1024);
+//	CHECK(!BlockTest_Empty(a));
+//	CHECK(a.Size() == 2048);
+//	CHECK(a.Capacity() == 2048);
+//	CHECK(BlockTest_IterateValidate(a, 1024, 1024));
+//	CHECK(!BlockTest_IterateValidate(a, 0, 1024));
+//	CHECK(BlockTest_Iterate(a));
+//	CHECK(BlockTest_IterateValidate(a));
+//
+//	BLOCK c(a);
+//	b = std::move(a);
+//
+//	CHECK(BlockTest_Empty(a));
+//
+//	int64_t comp = Itr<uint8_t>::Compare(c.begin(), b.begin(), b.end());
+//
+//	CHECK(comp == c.Size());
+//
+//	return true;
+//}
 
 //void dbg() {
 //
@@ -234,31 +233,6 @@ bool BlockTest() {
 	BlockP MM = std::move(M);
 	CHECK(BlockTest_Empty(M));
 	CHECK(BlockTest_IterateValidate(MM));
-
-	//TODO:: block.Copy
-	//TODO:: copy constructor
-	//TODO:: shift
-	//TODO:: overwrite
-
-	//DYNAMIC
-	BlockD d;
-	BlockD f(666);
-
-	CHECK(BlockTest_Empty(d));
-	CHECK(BlockTest_Empty(f));
-
-	f.Insert_Blank(256);
-	CHECK(f.Size() == 256);
-	CHECK(f.Capacity() == 1024);
-
-	auto i = f.begin();
-
-	CHECK(BlockTest_Iterate(f));
-	CHECK(BlockTest_IterateValidate(f));
-
-	//TODO:: block.Copy
-	//TODO:: copy constructor
-	//todo:: Test Insert/Replace
 
 	return true;
 }

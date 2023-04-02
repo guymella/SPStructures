@@ -7,6 +7,7 @@
 */
 
 //#include <iterator>
+#include "Structures/Types.h"
 
 template <typename TYPE>
 class iIteratorBase {
